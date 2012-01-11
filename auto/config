@@ -1,0 +1,21 @@
+#!/bin/sh
+
+#config file built using tutorial 3 of manual
+
+#	--linux-flavors 686-pae \
+
+# rescue package list is broken: it depends on non-existant packages such as thttpd and honeyd
+
+lb config noauto \
+	--architecture i386 \
+	--package-lists "lxde" \
+	--apt-indices false \
+	--memtest none \
+	--parent-mirror-bootstrap http://debian.mines.inpl-nancy.fr/debian/ \
+	"${@}"
+
+# Extra content that we need to add on the key
+echo "iceweasel libreoffice openjdk-6-jdk" >> config/package-lists/my.list.chroot
+# We need to speak french, usually
+#echo "french french-desktop" >> config/package-lists/my.list.chroot
+
