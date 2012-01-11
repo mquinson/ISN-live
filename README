@@ -1,0 +1,27 @@
+This project aims at providing the students of the Computer Science
+option in the French Baccalauréat ("Informatique et Sciences du
+Numérique") with a live system containing all the tools that they
+need.
+
+Its technical substrate is the debian-live tool suite allowing to
+create live systems that you can boot from an USB stick, with support
+for persistancy of your data. 
+
+Some extra tools are envisionned in addition of debian-live (or as
+contribution to that project) to ease the dupplication and update of
+USB sticks. It should be as easy as possible to create a fresh USB
+stick from an existing one (for new students, or when a stick gets
+lost), and to update a stick (to the lastest program versions).
+
+Beyond these technical considerations, we plan to have a coherent
+editorial activity to select the tools and media that are part of the
+system as pedagogical material.
+
+Please note that this project is still in its early stage right now,
+but will probably rapidly evolve, as the first lectures of the ISN
+option are expected for the scolar year 2012-2013.
+
+
+PS: sorry, but most of this project's documentation is in French
+beside of this file. We french people are definitely bad world
+citizen... You knew that already...
