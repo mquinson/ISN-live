@@ -13,6 +13,7 @@ lb config noauto \
 	--apt-indices false \
 	--memtest none \
 	--parent-mirror-bootstrap http://debian.mines.inpl-nancy.fr/debian/ \
+	--parent-mirror-binary http://debian.mines.inpl-nancy.fr/debian/ \
 	"${@}"
 
 # Extra content that we need to add on the key
