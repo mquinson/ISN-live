@@ -7,6 +7,7 @@
 # rescue package list is broken: it depends on non-existant packages such as thttpd and honeyd
 
 lb config noauto \
+	--binary-images usb-hdd \
 	--architecture i386 \
 	--package-lists "lxde" \
 	--apt-indices false \
