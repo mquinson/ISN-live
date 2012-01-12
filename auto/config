@@ -7,7 +7,7 @@
 # rescue package list is broken: it depends on non-existant packages such as thttpd and honeyd
 
 lb config noauto \
-	--binary-images usb-hdd \
+	--binary-images hdd \
 	--architecture i386 \
 	--package-lists "lxde" \
 	--apt-indices false \
@@ -18,6 +18,17 @@ lb config noauto \
 
 # Extra content that we need to add on the key
 echo "iceweasel libreoffice openjdk-6-jdk" >> config/package-lists/my.list.chroot
+
+# Work around a bug in live-build (from http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=622838#58)
+cat > config/hooks/fix_syslinux.sh.binary << END
+#!/bin/bash
+cd binary/live || exit 1
+vmlinuz=$(ls vmlinuz* | tail -n1)
+ln  $vmlinuz vmlinuz || true
+initrd=$(ls initrd.img* | tail -n1)
+ln  $initrd initrd.img || true
+END
+
 # We need to speak french, usually
 #echo "french french-desktop" >> config/package-lists/my.list.chroot
 
