@@ -1,3 +1,4 @@
 #!/bin/sh
 
-lb build noauto "${@}" 2>&1 | tee binary.log
+#lb build noauto --verbose "${@}" 2>&1 | tee binary.log
+lb build noauto --debug "${@}" 2>&1 | tee binary.log
