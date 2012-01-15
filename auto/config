@@ -23,10 +23,10 @@ echo "iceweasel libreoffice openjdk-6-jdk" >> config/package-lists/my.list.chroo
 cat > config/hooks/fix_syslinux.sh.binary << END
 #!/bin/bash
 cd binary/live || exit 1
-vmlinuz=$(ls vmlinuz* | tail -n1)
-ln  $vmlinuz vmlinuz || true
-initrd=$(ls initrd.img* | tail -n1)
-ln  $initrd initrd.img || true
+vmlinuz=\$(ls vmlinuz* | tail -n1)
+ln  \$vmlinuz vmlinuz || true
+initrd=\$(ls initrd.img* | tail -n1)
+ln  \$initrd initrd.img || true
 END
 
 # We need to speak french, usually
