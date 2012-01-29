@@ -7,7 +7,7 @@
 lb config noauto \
 	--binary-images hdd \
 	--architecture i386 \
- 	--package-lists "lxde" \
+ 	--package-lists "standard" \
 	--bootloader syslinux \
 	--apt-indices false \
 	--language fr \
@@ -16,13 +16,16 @@ lb config noauto \
 	--parent-mirror-binary http://debian.mines.inpl-nancy.fr/debian/ \
 	"${@}"
 
+# We'll use a modern union-like mounting
+echo "aufs-tools" >> config/package-lists/my.list.chroot
+
 # Extra content that we need to add on the key: vanilla stuff
 # echo "iceweasel libreoffice" >> config/package-lists/my.list.chroot
 
 # extra content: JLM stuff
-echo "openjdk-6-jdk jarwrapper libmiglayout-java libsimple-xml-java" >> config/package-lists/my.list.chroot
+#echo "openjdk-6-jdk jarwrapper libmiglayout-java libsimple-xml-java" >> config/package-lists/my.list.chroot
 
-# LXDE: switch package-lists above to "standard" to speedup the generation time. You can regain lxde by decommenting next line (but not sure of what's the best solution)
+# LXDE: switch package-lists above from "standard" to "lxde" if you want. It will slowdown the generation time. Another way to regain lxde it to decomment next line (but not sure of what's the best solution)
 # echo "xorg lxde gdm network-manager-gnome desktop-base" >> config/package-lists/my.list.chroot
 
 # Work around a bug in live-build (from http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=622838#58)
