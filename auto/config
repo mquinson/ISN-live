@@ -10,7 +10,6 @@ lb config noauto \
  	--package-lists "standard" \
 	--bootloader syslinux \
 	--apt-indices false \
-	--language fr \
 	--memtest none \
 	--parent-mirror-bootstrap http://debian.mines.inpl-nancy.fr/debian/ \
 	--parent-mirror-binary http://debian.mines.inpl-nancy.fr/debian/ \
