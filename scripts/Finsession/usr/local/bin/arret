@@ -1,0 +1,43 @@
+#!/bin/sh
+NOM=/tmp/B_`date +"%s"` 
+if [ -d /oldroot ] ; then
+DIRDEST=/oldroot/cdrom/home
+else
+DIRDEST=/cdrom/home
+fi
+DIRORG=/oldroot/ramdisk/home/agreg
+if [ ! -f /oldroot/ramdisk/home/.clefcodage ] ; then
+    (cd $DIRDEST ; find . -type f) | sort > /tmp/dirdest
+    (cd $DIRORG ; find . -type f)| sort > /tmp/dirorg
+    diff -urN /tmp/dirdest /tmp/dirorg | tail -n +2 | grep -E "^-" | sed -e '1,$s|^-\(.*\)$|sudo rm "'$DIRDEST/'\1"|' | sh
+    cd $DIRORG
+    mkdir -p $NOM
+    find . -type l | awk '{print "tar c  \""$0"\" | (cd '$NOM' ; tar x)"}' | sh
+    cd $NOM
+    find . | cpio -o -H newc > /tmp/liens.cpio 
+    cd /tmp
+    sudo mv liens.cpio /oldroot/cdrom/
+    rm -Rf $NOM
+    cd /tmp
+    rm -Rf $NOM
+    cd /home/agreg
+    for i in `cat $DIRORG/liste` ; do sudo cp -R "$i" $DIRDEST; done
+    ls $DIRORG | awk '{print "sudo cp -R \""$0"\" '$DIRDEST'"}' | sh
+    sudo bash -c 'find . -printf "chmod %m \"%p\" 2>/ramdisk/dev/null\n" > /oldroot/cdrom/droitshome.txt'
+else
+    cd /oldroot/ramdisk/home/agreg/public
+    sudo rsync  -rltpD -q  --del --exclude=".*" * /oldroot/cdrom/home/
+    sudo bash -c 'find . -printf "chmod %m \"%p\" 2>/ramdisk/dev/null\n" > /oldroot/cdrom/droitshome.txt'
+    mkdir -p $NOM
+    find . -type l | awk '{print "tar c  \""$0"\" | (cd '$NOM' ; tar x)"}' | sh
+    cd $NOM
+    find . | cpio -o -H newc > /tmp/liens.cpio 
+    cd /tmp
+    rm -Rf $NOM
+    sudo mv liens.cpio /oldroot/cdrom/
+    cd /oldroot/ramdisk/home/
+    sudo tar cf home.tar  --exclude=agreg/public .clefcodage agreg
+    sudo bcrypt home.tar
+    sudo mv home.tar.bfe /oldroot/cdrom
+fi
+sudo halt

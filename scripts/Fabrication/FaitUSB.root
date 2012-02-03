@@ -1,0 +1,130 @@
+#!/bin/sh
+#FAKE="echo "
+modele () {
+    unset MODELE
+    MODELE=`ls -l /dev/disk/by-id/ | grep "$1\$" | sed -e 's/^.*usb-\([^_]*_[^_]*_[^_]*\)_.*$/\1/'`
+}
+
+taille () {
+    unset TAILLE
+    TAILLE=`cat /sys/block/$1/size`
+    BLOC=`cat /sys/block/$1/queue/hw_sector_size`
+    TAILLE=`expr $TAILLE \* $BLOC / 1000000`
+}
+
+commande () {
+    echo "La commande suivante va être éxécutée:" > /tmp/USB_message
+    echo >> /tmp/USB_message
+    echo $1 >> /tmp/USB_message
+    echo >> /tmp/USB_message
+    echo $2 >> /tmp/USB_message
+    echo >> /tmp/USB_message
+    echo "Cliquer sur Oui pour continuer et Stop pour arrêter" >> /tmp/USB_message
+    xmessage -center -file /tmp/USB_message -buttons "Oui:0,Stop:1"
+    if [ $? -eq 1 ] ; then
+	exit 1
+    fi
+    if [ ! -z "$3" ] ; then
+	echo "$3" > /tmp/USB_message
+	cat >> /tmp/USB_message <<EOF
+
+Cette fenêtre disparaitra lorsque la commande sera finie.
+EOF
+	xmessage -center  -file /tmp/USB_message -buttons "Attendez..." &
+    fi
+    $FAKE $1
+    if [ ! -z "$3" ] ; then
+	killall xmessage > /dev/null 2> /dev/null 
+    fi
+}
+
+CLEFS=`ls -l /dev/disk/by-id/ | grep " usb-" | awk '{print $11}'  | sed -e 's|^.*\(sd.\)[0-9]*|\1|' | sort -u`
+BOUTON="Stop"
+echo -n > /tmp/USB_message
+for c in $CLEFS ; do 
+modele $c
+taille $c
+TYPE="$c: Clef USB $MODELE de $TAILLE Moctets"
+BOUTON=$BOUTON","
+BOUTON=$BOUTON$c
+echo $TYPE >> /tmp/USB_message
+done
+echo  >> /tmp/USB_message
+echo "Cliquez sur la clef que vous voulez utiliser:"  >> /tmp/USB_message
+CLEF_CHOISIE=`xmessage -center -print -file /tmp/USB_message -buttons $BOUTON`
+if [ $CLEF_CHOISIE = "Stop" ] ; then
+    exit 1
+fi
+for part in `ls /media | grep $CLEF_CHOISIE` ; do
+    su agreg -c "mount /media/$part"
+    su agreg -c "Thunar /media/$part &" 
+done
+sleep 2
+cat > /tmp/USB_message <<EOF
+Vérifiez si c'est la bonne clef, les fichiers seront effacés.
+Cliquez sur Stop ou Continue suivant votre décision.
+EOF
+CHOIX=`xmessage -center -print -file /tmp/USB_message -buttons "Stop,Continue" `
+if [ $CHOIX = "Stop" ] ; then
+    for part in `ls /media | grep $CLEF_CHOISIE` ; do
+	su agreg -c "umount /media/$part"
+    done
+    killall Thunar
+    exit 1
+fi
+taille $CLEF_CHOISIE
+if [ $TAILLE -le 1600 ] ; then 
+    ARG="  0 64 32"
+elif [ $TAILLE -le 3000 ] ; then 
+    ARG=" 0 128 32"
+else ARG=" 0 255 63"
+fi
+killall Thunar
+mount | grep /dev/$CLEF_CHOISIE | awk '{print "umount "$1}' | sh
+CMD="mkdiskimage /dev/"$CLEF_CHOISIE$ARG
+commande "mkdiskimage /dev/$CLEF_CHOISIE$ARG"  "Formattage bas niveau de la clef USB, attention c'est irréversible." "Formattage bas niveau en cours..."
+fdisk /dev/$CLEF_CHOISIE <<EOF
+t
+c
+w
+q
+EOF
+commande "mkfs.vfat /dev/"$CLEF_CHOISIE"1" "Formattage VFAT de la clef" "Formattage VFAT en cours..."
+if [ -z $FAKE ] ; then
+    cat /usr/lib/syslinux/mbr.bin > /dev/$CLEF_CHOISIE
+fi
+PARTITION="$CLEF_CHOISIE"1
+cat > /tmp/USB_message <<EOF
+Attente de la clef USB, un repertoire /media/$PARTITION devrait apparaitre.
+Cela peut prendre un  peu de temps, le bouton Stop arrête le processus.
+EOF
+ARRET=Continue
+while [ ! -b /dev/$PARTITION ] && [ $ARRET != "Stop" ] ; do 
+ARRET=`xmessage -print -center -file /tmp/USB_message -timeout 2 -buttons "Stop"`
+done
+if [ ! -b /dev/$PARTITION ] ; then
+    exit 1
+fi
+mkdir -p /media/$PARTITION
+mount -t vfat /dev/$PARTITION /media/$PARTITION
+cat > /tmp/USB_message <<EOF
+Recopie des fichiers sur la clef,prévoir quelques minutes, 
+il y a tout de même plus de 500M à copier.
+EOF
+xmessage -center -file /tmp/USB_message -buttons "Attendez..." &
+cd /oldroot/cdrom
+cp -a * /media/$PARTITION
+chmod -R +w /media/$PARTITION
+cd /media/$PARTITION
+if [ -f isolinux/linux26 ] ; then
+    mv isolinux/linux26 .
+    mv isolinux/minirt26.gz .
+fi
+cd 
+killall xmessage > /dev/null 2>&1
+umount /media/$PARTITION
+syslinux /dev/$PARTITION
+cat > /tmp/USB_message <<EOF
+La clef est prête.
+EOF
+xmessage -center -file /tmp/USB_message -buttons "Cliquer ici"

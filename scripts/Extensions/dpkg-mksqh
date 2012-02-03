@@ -1,0 +1,45 @@
+#!/bin/sh
+VERSION=`cat /FB`
+echo "NE PAS S'INQUIETER DES ÉVENTUELLES ERREURS DE tar."
+cd /oldroot/ramdisk
+echo "find usr/share/doc -type d | grep usr/share/doc/ \\" > /tmp/m-put
+cat /var/FB-garde  | awk '{print " | grep -v usr/share/doc/"$1" \\"}' >>  /tmp/m-put
+echo >>  /tmp/m-put
+echo "VERSION=`cat /FB` " > /tmp/d-put
+echo "cd /oldroot/ramdisk " >> /tmp/d-put
+echo "tar cjf /tmp/dpkg.tar.bz2 \\" >> /tmp/d-put
+echo "var/lib/apt \\" >> /tmp/d-put
+echo "var/lib/dpkg \\" >> /tmp/d-put
+echo "var/lib/aptitude \\" >> /tmp/d-put
+echo "var/cache/apt \\" >> /tmp/d-put
+echo "var/cache/debconf \\" >> /tmp/d-put
+cat /var/FB-vire | awk '{print $1" \\"}' >> /tmp/d-put
+sh /tmp/m-put | awk '{print $1" \\"}' >> /tmp/d-put
+echo "usr/share/lintian" >> /tmp/d-put
+echo "rm -Rf \\" >> /tmp/d-put
+echo "var/lib/apt \\" >> /tmp/d-put
+echo "var/lib/dpkg \\" >> /tmp/d-put
+echo "var/lib/aptitude \\" >> /tmp/d-put
+echo "var/cache/apt \\" >> /tmp/d-put
+echo "var/cache/debconf \\" >> /tmp/d-put
+sh /tmp/m-put | awk '{print $1" \\"}' >> /tmp/d-put
+echo "/usr/share/lintian" >> /tmp/d-put
+echo "rm -Rf \\" >> /tmp/d-put
+echo "var/lib/apt \\" >> /tmp/d-put
+echo "var/lib/dpkg \\" >> /tmp/d-put
+echo "var/lib/aptitude \\" >> /tmp/d-put
+echo "var/cache/apt \\" >> /tmp/d-put
+echo "var/cache/debconf \\" >> /tmp/d-put
+cat /var/FB-vire | awk '{print $1" \\"}' >> /tmp/d-put
+sh /tmp/m-put | awk '{print $1" \\"}' >> /tmp/d-put
+echo "usr/share/lintian" >> /tmp/d-put
+sh /tmp/d-put
+rm /tmp/d-put
+rm /tmp/m-put
+mkdir /tmp/dpkg-sqh
+cd /tmp/dpkg-sqh
+tar xjf ../dpkg.tar.bz2
+rm ../dpkg.tar.bz2
+cd ..
+mksquashfs dpkg-sqh /oldroot/cdrom/agreg/extension_dpkg_`cat /FB`-`date +"%s"`.sqh 
+rm -Rf dpkg-sqh

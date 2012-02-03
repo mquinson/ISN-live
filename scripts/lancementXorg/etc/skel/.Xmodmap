@@ -1,0 +1,11 @@
+keycode  11 = eacute 2 asciitilde Eacute asciitilde Eacute
+keycode  16 = egrave 7 dead_grave Egrave dead_grave Egrave
+keycode  18 = dead_circumflex  9 ccedilla Ccedilla asciicircum Ccedilla
+keycode  19 = agrave 0 at Agrave at Agrave
+keycode  30 = u U ucircumflex udiaeresis ucircumflex udiaeresis
+keycode  31 = i I icircumflex idiaeresis icircumflex idiaeresis
+keycode  32 = o O ocircumflex odiaeresis ocircumflex odiaeresis
+keycode  52 = w W guillemotleft less guillemotleft less
+keycode  53 = x X guillemotright greater guillemotright greater
+keycode  48 = ugrave percent twosuperior Ugrave twosuperior Ugrave
+keycode  49 = oe OE leftdoublequotemark rightdoublequotemark leftdoublequotemark rightdoublequotemark

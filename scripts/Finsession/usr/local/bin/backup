@@ -1,0 +1,32 @@
+#!/bin/sh
+if [ ! -f /oldroot/ramdisk/home/.clefcodage ] ; then
+    cd /oldroot/ramdisk/home/agreg
+    NOM=/tmp/B_`date +"%s"` 
+    rsync  -rltpD -q  --del --exclude=".*" . /oldroot/cdrom/home/
+    cat liste | awk '{print "rsync -P -rltpD  --del "$1" /oldroot/cdrom/home/"}' | sh
+    find . -printf "chmod %m \"%p\" 2>/ramdisk/dev/null\n" > /oldroot/cdrom/droitshome.txt
+    mkdir -p $NOM
+    find . -type l | awk '{print "tar c  \""$0"\" | (cd '$NOM' ; tar x)"}' | sh
+    cd $NOM
+    find . | cpio -o -H newc > /tmp/liens.cpio 
+    cd /tmp
+    sudo mv liens.cpio /oldroot/cdrom/
+    rm -Rf $NOM
+else
+    cd /oldroot/ramdisk/home/agreg/public
+    rsync  -rltpD -q  --del --exclude=".*" * /oldroot/cdrom/home/
+    find . -printf "chmod %m \"%p\" 2>/ramdisk/dev/null\n" > /oldroot/cdrom/droitshome.txt
+    NOM=/tmp/B_`date +"%s"` 
+    mkdir -p $NOM
+    find . -type l | awk '{print "tar c  \""$0"\" | (cd '$NOM' ; tar x)"}' | sh
+    cd $NOM
+    find . | cpio -o -H newc > /tmp/liens.cpio 
+    cd /tmp
+    rm -Rf $NOM
+    sudo mv liens.cpio /oldroot/cdrom/
+    cd /oldroot/ramdisk/home/
+    tar cf home.tar  --exclude=agreg/public .clefcodage agreg
+    bcrypt home.tar
+    mv home.tar.bfe /oldroot/cdrom
+fi
+

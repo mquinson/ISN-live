@@ -1,0 +1,4 @@
+ACTION=="add", ENV{SUBSYSTEM}=="block", ENV{ID_TYPE}=="floppy" , PROGRAM="/lib/udev/usb_fstab.sh %k"
+ACTION=="add", ENV{SUBSYSTEM}=="block", ENV{ID_FS_TYPE}!="" , PROGRAM="/lib/udev/usb_fstab.sh %k"
+ACTION=="remove", ENV{SUBSYSTEM}=="block", ENV{ID_TYPE}=="floppy" , PROGRAM="/lib/udev/usb_fstab.sh %k"
+ACTION=="remove", ENV{SUBSYSTEM}=="block", ENV{ID_FS_TYPE}!="" , PROGRAM="/lib/udev/usb_fstab.sh %k"

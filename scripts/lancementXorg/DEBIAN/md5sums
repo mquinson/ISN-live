@@ -1,0 +1,6 @@
+1a777f4da027849693e6e05b9fc7993d  etc/skel/.Xmodmap
+9ebdf82fe50af62a39f45222b129ea7f  etc/skel/.bashrc
+f15440d1380d75d83d29bdf1e468143d  etc/skel/.xinitrc
+1ed55180d23dd0eb94c7e69ee70ab6fd  usr/bin/startx
+e6314090b494d609f82460f2e5fff4c3  usr/bin/anacmdline
+2bb6c6501cd777c02bc6601a75b955b2  usr/local/bin/faitxorg
