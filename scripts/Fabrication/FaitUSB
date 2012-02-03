@@ -1,0 +1,19 @@
+#!/bin/sh
+cat > /tmp/USB_faitUSB <<EOF
+Cet utilitaire permet de réaliser une clef USB boutable,
+voulez vous continuer ou arrêter?
+Si vous continuez veuillez introduire la clef USB puis
+cliquer sur Continuer après 1 à 2 secondes, sinon cliquez
+sur Stop.
+
+EOF
+SORTIE=`xmessage -center -print -buttons "Stop,Continuer,Aide" -file /tmp/USB_faitUSB`
+if [ $SORTIE = "Aide" ] ; then
+/etc/alternatives/x-www-browser /var/Doc/Clef/fabrique.html &
+sleep 1
+SORTIE=`xmessage -center -print -buttons "Stop,Continuer" -file /tmp/USB_faitUSB`
+fi
+if [ $SORTIE = "Stop" ] ; then
+exit 1
+fi
+sudo /usr/local/bin/FaitUSB.root

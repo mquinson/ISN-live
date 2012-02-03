@@ -1,0 +1,26 @@
+#!/bin/sh
+touch /oldroot/cdrom/Extensionpossible 2> /dev/null
+if [ $? -gt 0 ] ; then
+	echo "Pas de clef USB"
+	exit 1
+fi
+rm /oldroot/cdrom/Extensionpossible
+aptitude clean
+if [ -d /var/lib/dpkg/info ] ; then
+	echo "Nettoyage de l'arborescence et sauvegarde"
+	dpkg-mksqh
+# vieille version
+#	dpkg-put
+#	mv /tmp/dpkg-* /oldroot/cdrom/
+	sync
+fi
+cd /oldroot/ramdisk
+echo -n "Nom de l'extension: "
+read NUMERO
+EXCLUDE=
+for f in `cat /var/FB-filtre | grep -v "^#"` ; do
+     EXCLUDE=$EXCLUDE"  "$f
+done
+mksquashfs . /tmp/extension_$NUMERO.sqh -e dev proc home root sys cdrom AGREG media mnt oldroot extension* $EXCLUDE
+mv /tmp/extension_$NUMERO.sqh /oldroot/cdrom/agreg
+

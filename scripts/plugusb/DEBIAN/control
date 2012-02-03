@@ -1,0 +1,12 @@
+Package: plugusb
+Priority: optional
+Section: unknown
+Installed-Size: 72
+Maintainer: François Boisson <francois@boisson.homeip.net>
+Architecture: all
+Version: 1.0-9
+Depends: udev
+Conffiles:
+ /etc/udev/rules.d/z99_clef.rules 4ef9ab28a272bde3dd67366d028e7341
+Description: Hotplug clef USB
+ Paquet permettant le hotplug des clefs USB et l'écriture dans fstab. .

@@ -1,0 +1,11 @@
+Package: xbase-agreg
+Priority: optional
+Section: x11
+Installed-Size: 52
+Maintainer: François Boisson <francois@boisson.homeip.net>
+Architecture: all
+Version: 1.4
+Depends: xbase-clients
+Description: Lancement de X
+ Lancement de X pour ClefAgreg
+ .
