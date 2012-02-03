@@ -1,0 +1,44 @@
+#!/bin/sh
+FIC=$1
+EDID=/tmp/Xmonitor
+MODE=$2
+if grep -q -E "^NOEDID" /home/agreg/preferences ; then
+    cat $FIC | sed -e '1,$s/\(Depth[ 0-9]*\)$/\1\nModes "'$MODE'"/g' | sed -e '1,$s|/dev/mouse|/dev/input/mice|g' > "$FIC"_new
+else
+get-edid > /tmp/edid_monitor 2> /tmp/err_edid
+if grep -q "EDID is probably invalid" /tmp/err_edid 
+then
+    cat $FIC | sed -e '1,$s/\(Depth[ 0-9]*\)$/\1\nModes "'$MODE'"/g' | sed -e '1,$s|/dev/mouse|/dev/input/mice|g' > "$FIC"_new
+else
+    if grep -q "EDID data should not be trusted" /tmp/err_edid 
+    then
+	cat $FIC | sed -e '1,$s/\(Depth[ 0-9]*\)$/\1\nModes "'$MODE'"/g' | sed -e '1,$s|/dev/mouse|/dev/input/mice|g' > "$FIC"_new
+    else 
+	if [ ! -z "$MODE" ] ;then
+	    cat $FIC | sed -e '1,$s/\(Depth[ 0-9]*\)$/\1\nModes "'$MODE'"/g' | sed -e '1,$s|/dev/mouse|/dev/input/mice|g' > "$FIC"_new
+	    mv "$FIC"_new $FIC
+	fi
+	parse-edid /tmp/edid_monitor > $EDID
+	awk 'BEGIN {AV=1;AP=0;PD=0;C=1} 
+    /^Section "Monitor"/ {AV=0;AP=0;PD=1;C=1} 
+    /^Section/ {PD=PD+AV}
+    /EndSection/ {C=C-PD;if (C==0) {AP=1;PD=0}}
+    {if (AV==1) {print $0n > "'$FIC'_AV"}
+               else {
+               if (AP==1) {print $0 > "'$FIC'_AP"} 
+                          else {print $0 > "'$FIC'_Monitor"}
+
+                    }
+    }' $FIC
+	OLDMONITOR=`grep Identifier "$FIC"_Monitor  | awk '{print $2}'`
+	NEWMONITOR=`grep Identifier $EDID  | awk '{print $2}'`
+	sed -e '1,$s/'$OLDMONITOR'/'$NEWMONITOR'/' "$FIC"_AP | tail -n +2 > "$FIC"_APnew
+	cat $"$FIC"_AV $EDID "$FIC"_APnew  | sed -e '1,$s|/dev/mouse|/dev/input/mice|g' > "$FIC"_new
+    fi
+fi
+fi
+if [ -z $NODRI ] ; then
+cp "$FIC"_new   /tmp/xorg.conf
+else
+cat "$FIC"_new | awk 'BEGIN {S=0} $0 ~ /Section.*\"Device\"/ {S=1} {print $0} $0 ~ /Driver/ {if (S==1) {print "	Option	\"DRI\"	\"false\"";S=2}}' > /tmp/xorg.conf
+fi

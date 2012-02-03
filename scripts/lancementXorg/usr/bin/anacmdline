@@ -1,0 +1,18 @@
+#!/bin/sh
+CHAINE=`cat /etc/cmdlineboot`FIN
+if grep -q resolution /etc/cmdlineboot ; then
+    echo $CHAINE | sed -e 's/^.*resolution=\([0-9]*x[0-9]*\).*$/MODE=\1/' > /etc/preferences
+fi
+if grep -q layout /etc/cmdlineboot ; then
+    echo $CHAINE | sed -e 's/^.*layout=\(..\).*$/LAYOUT=\1/' >> /etc/preferences
+fi
+if grep -q keymap /etc/cmdlineboot ; then
+    echo $CHAINE | sed -e 's/^.*keymap=\([^ ]*\).*FIN$/KEYMAP=\1/' >> /etc/preferences
+fi
+if grep -q serveur /etc/cmdlineboot ; then
+    echo $CHAINE | sed -e 's/^.*serveur=\([^ ]*\).*FIN$/SERVEUR=\1/' >> /etc/preferences
+fi
+if grep -q couleur /etc/cmdlineboot ; then
+    echo $CHAINE | sed -e 's/^.*couleur=\([^ ]*\).*FIN$/COULEUR=\1/' >> /etc/preferences
+fi
+

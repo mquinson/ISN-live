@@ -1,0 +1,40 @@
+#!/bin/sh
+VERSION=`cat /FB`
+FICHIER=dpkg-agreg-$VERSION.tar.bz2
+if [ -f /oldroot/cdrom/$FICHIER ] ; then
+    cd  /
+    tar xjf /oldroot/cdrom/$FICHIER
+else
+    cd /tmp
+    if [ -f chargement.url ] ; then
+	rm chargement.url
+    fi
+    wget http://clefagreg.dnsalias.org/chargement.url
+    URL=(`cat chargement.url`)
+    echo "Lieux possibles: "${URL[@]}
+    echo ${URL[0]}
+    I=0
+    PASFAIT=1
+    while [ $PASFAIT -ne 0 ] ; do
+	echo "Chargement dpkg-agreg-$VERSION.tar.bz2 from http://phare.normalesup.org/~boisson"
+	echo "FREE ayant supprimé les fichiers unilatéralement, le dépot a changé."
+	echo "(ne vous abonnez pas chez Free)."
+	
+	wget --passive-ftp ${URL[$I]}/dpkg-agreg-$VERSION.tar.bz2
+	if [ -f dpkg-agreg-$VERSION.tar.bz2 ] ; then
+	    echo "Extracting dpkg-agreg-$VERSION.tar.bz2..."
+	    cd /
+	    tar -jxvf /tmp/dpkg-agreg-$VERSION.tar.bz2
+	    rm /tmp/dpkg-agreg-$VERSION.tar.bz2
+	    PASFAIT=0
+	else
+	    I=$[$I+1]
+	    echo "Suivant: "${URL[$I]}
+	    if [ ${URL[$I]} = FIN ] ; then
+		PASFAIT=0
+	    fi
+	fi
+    done
+aptitude update
+fi
+echo "Terminé, vous pouvez faire des manipulations."
