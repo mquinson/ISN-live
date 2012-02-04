@@ -1,0 +1,13 @@
+Visiblement, la ligne de commande est parsée et boot=xxx est envoyée
+dans la variable BOOT
+
+Puis le script ./scripts/${BOOT}
+
+est exécuté. Ce script définit la fonction mountroot qui est appelée
+plus tard. Le nom de la racine est ${rootmnt}.
+
+Les modules des fs semblent devoir être chargés à la main.
+
+Il s'agit donc de faire un script live et d'appeler avec l'option boot=live.
+
+
