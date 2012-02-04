@@ -9,5 +9,18 @@ plus tard. Le nom de la racine est ${rootmnt}.
 Les modules des fs semblent devoir être chargés à la main.
 
 Il s'agit donc de faire un script live et d'appeler avec l'option boot=live.
+Ce script est à mettre dans scripts (si!), et doit s'inspirer de mkinitramfs.sh
+Contrairement à ce que je pensais, ce script doit également contenir la
+recherche du périphérique concerné (première partie de mon init à moi).
+
+(* à voir, le /dev: est-il à jour à ce moment là? Il semble qu'il faille
+charger usb-storage, wait_for_udev 10s au moins puis ça devrait être bon.
+La question est faut-il se taper le chargement des ?hci-hcd ou pas? *)
+
+Le chargement de binaires est à préciser dans un fichier dans hooks.
+Les binaires concernés sont trouvefichier, sync, loadkeys  pour charger
+une carte clavier sur la clef.
+
+
 
 
