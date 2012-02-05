@@ -21,6 +21,12 @@ Le chargement de binaires est à préciser dans un fichier dans hooks.
 Les binaires concernés sont trouvefichier, sync, loadkeys  pour charger
 une carte clavier sur la clef.
 
+Il semble donc que trouvefichier and co ne soit pls nécessaires, cf
+fichier live.
+
+(* SOUCI: fstype renvoit unknown pour une clef vfat, va savoir pourquoi.
+   Rustine avec une option BRUTAL montant le système de fichier quand même
+   au cas où mais ça n'est guère satisfaisant *)
 
 
 
