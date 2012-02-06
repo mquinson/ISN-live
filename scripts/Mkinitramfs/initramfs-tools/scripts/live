@@ -6,9 +6,9 @@
 # Return value: indicates if root is mount
 
 RAMSIZE=1000000
-ISN_DIR=isnfs
-ISN_NAME=base
-ISN_USER=live
+ISN_DIR=agreg
+ISN_NAME=agreg
+ISN_USER=agreg
 LISTE_EXTENSIONS=extensions_${ISN_NAME}
 MARQUEUR=${ISN_DIR}/${ISN_NAME}
 # if BRUTAL then even unknown FS are tested (sometimes this abruti doesn't known
@@ -16,7 +16,7 @@ MARQUEUR=${ISN_DIR}/${ISN_NAME}
 BRUTAL=Yes
 DEBUG=Yes
 
-BASEROOT=/ISN
+BASEROOT=/AGREG
 MONTAGE=/cdrom
 
 get_fstype ()
@@ -122,8 +122,10 @@ pre_mountroot()
 		    else
 		    modprobe $FS_TYPE 2> /dev/null
 		    mount -t $FS_TYPE /dev/${ATESTER} $MONTAGE 2> /dev/null
-		    if [ -f ${MONTAGE}/$${MARQUEUR} ] ; then
+		    if [ -f ${MONTAGE}/${MARQUEUR} ] ; then
 			if [ $DEBUG = "Yes" ] ; then echo Found $ATESTER ; fi
+			    ROOT=/dev/${ATESTER}
+			    umount  $MONTAGE
 		    fi
 		    umount $MONTAGE 2> /dev/null
 		    fi
@@ -131,7 +133,7 @@ pre_mountroot()
 	if [ ! -z $ROOT ] ; then break ; fi
     done
     if [ -z $ROOT ] ; then
-	echo "Base system not found, fropping to a limited shell"
+	echo "Base system not found, dropping to a limited shell"
 	echo "Sorry and good luck..."
 	panic "File ${MARQUEUR} not found on block devices, dropping shell"
     fi
@@ -141,11 +143,23 @@ pre_mountroot()
 mount_base()
 {
     FSTYPE=$(get_fstype "$1")
-    if [ -z "$FSTYPE" ] ; then
+    if [ -z "$FSTYPE" ] || [ "$FSTYPE" = "unknown" ] ; then
+	if [ $DEBUG = "Yes" ] ; then echo mount $1 $MONTAGE ; fi
 	mount $1 $MONTAGE
     else
+	if [ $DEBUG = "Yes" ] ; then echo mount -t $FSTYPE $1 $MONTAGE ; fi
 	mount -t $FSTYPE $1 $MONTAGE
     fi
+    if [ ! -b /dev/loop0 ] ; then
+	cd /dev
+	mknod loop0 b 7 0
+	cd /
+    fi
+    mkdir -p ${BASEROOT}
+    if [ $DEBUG = "Yes" ] ; then
+	echo mount ${MONTAGE}/${ISN_DIR}/${ISN_NAME} $BASEROOT -t squashfs -o loop
+    fi
+    modprobe squashfs
     mount ${MONTAGE}/${ISN_DIR}/${ISN_NAME} $BASEROOT -t squashfs -o loop
 }
 
@@ -155,10 +169,9 @@ mountroot()
 {
     pre_mountroot
 
-    mount_agreg ${ROOT}
+    mount_base ${ROOT}
 # on test l'existence du répertoire /boot sur l'arborescence montée
-    if [ -d ${BASEROOT}/boot
-    then
+    if [ -d ${BASEROOT}/boot ] ; then
 # on enchaine sur le script de ClefAgreg    
 # Enable kernel messages
 	echo "6" > /proc/sys/kernel/printk
@@ -191,7 +204,9 @@ mountroot()
 	mount -t tmpfs -o "size=${RAMSIZE}k" /ramdisk /ramdisk
 	echo "Done."
 
-	mkdir -p /ramdisk/home/
+	mkdir -p /ramdisk/home/${ISN_USER}
+	mkdir -p /ramdisk/var/run
+	mkdir -p /ramdisk/etc
 # incomplet, on oublie une partie des modifications avec les extensions
     
 # Create empty utmp and wtmp
@@ -366,6 +381,10 @@ mountroot()
     echo RAMDISK fini, boot normal.
     echo Running init
     cd /
+     echo "6" > /proc/sys/kernel/printk
+# Allow signals
+    trap 1 2 3 15
+    exec /bin/sh   
 else
     echo "Aie, big panic, cannot find a valid root filesystem.."
     echo "Here is a shell, enjoy!"
