@@ -1,0 +1,10 @@
+usb-storage 
+whci-hcd 
+xhci-hcd 
+ehci-hcd 
+ohci-hcd 
+uhci-hcd 
+atkbd 
+sg 
+unix
+squashfs
