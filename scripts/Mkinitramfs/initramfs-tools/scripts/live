@@ -14,7 +14,7 @@ MARQUEUR=${ISN_DIR}/${ISN_NAME}
 # if BRUTAL then even unknown FS are tested (sometimes this abruti doesn't known
 # that is vfat on my test.
 BRUTAL=Yes
-DEBUG=Yes
+DEBUG=No
 
 BASEROOT=/AGREG
 MONTAGE=/cdrom
@@ -207,6 +207,9 @@ mountroot()
 	mkdir -p /ramdisk/home/${ISN_USER}
 	mkdir -p /ramdisk/var/run
 	mkdir -p /ramdisk/etc
+	mkdir -p /ramdisk/dev
+# test
+
 # incomplet, on oublie une partie des modifications avec les extensions
     
 # Create empty utmp and wtmp
@@ -221,7 +224,12 @@ mountroot()
 
     df
     echo "...RAMDISK fini."
-    
+
+# ne fonctionne pas 
+#    mount -n -o move /dev /ramdisk/dev
+#    if [ ! -d /dev ] ; then
+#	ln -s /ramdisk/dev /dev
+#    fi
 # Mis en place du modprobe au cas où
 # bon le unionfs
 
@@ -285,9 +293,10 @@ mountroot()
 #	    RAJOUT=:/$DIR=ro+wh$RAJOUT
 #	done
 #    fi
-    umount /dev/pts
-    mv /dev /ramdisk
-    ln -s /ramdisk/dev /dev
+#  Essai pour le /dev
+#    umount /dev/pts
+#    mv /dev /ramdisk
+#    ln -s /ramdisk/dev /dev
     echo Assemblage des repertoires
     mount -t aufs aufs ${rootmnt} -o dirs=/ramdisk=rw$RAJOUT:/${BASEROOT}=ro
     if [ ! -d ${rootmnt}/oldroot ] ; then
@@ -381,10 +390,6 @@ mountroot()
     echo RAMDISK fini, boot normal.
     echo Running init
     cd /
-     echo "6" > /proc/sys/kernel/printk
-# Allow signals
-    trap 1 2 3 15
-    exec /bin/sh   
 else
     echo "Aie, big panic, cannot find a valid root filesystem.."
     echo "Here is a shell, enjoy!"
