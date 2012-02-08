@@ -1,0 +1,38 @@
+***************
+Remarque sur http://boisson.homeip.net:8080/clef.php
+***************
+En cas de souci d'affichage, mettre NOEDID=1 dans le fichier preferences
+
+Une clef USB (avec CD éventuel) boutable avec un noyau 2.6.31
+
+
+Chargeable sur
+http://clefagreg.dnsalias.org/
+
+Tous les renseignements sur ce site. Voir notamment la FAQ en
+cas de soucis.
+
+
+Mode d'emploi
+
+1) Gravez le CD, celui ci est boutable seul
+2) Pour la clef, boutez sur le CD et utilisez le programme FaitUSB.
+Voir la page http://clefagreg.dnsalias.org/ClefAgreg.html pour
+les explications.
+
+Le système contient tous les logiciels libres utiles pour l'agrégation de
+Mathématiques à l'exception de GAP (trop gros) soit donc maxima, Giac/Xcas,
+Scilab, GP/PARI, etc plus des compilateurs C, Java et Camllight avec Emacs
+et l'environnement correspondant. Il y a également Scite plusdes utilitaires
+classiques. (cf http://clefagreg.dnsalias.org/ClefAgreg.html)
+
+Les fichiers du répertoire home de la clef sont transférés dans le repertoire
+de l'utilisateur agreg. A l'issue de la session, si on quitte correctement
+via le menu (Arret), les fichiers sont copiés sur la clef.
+
+Voilà, renseignements auprès de francois@boisson.homeip.net
+
+On peut à l'aide du fichier preferences fixer une résolution préférée
+ou un type de clavier.
+
+Remarques par mail ou sur http://boisson.homeip.net:8080/clef.php
