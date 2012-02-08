@@ -383,6 +383,9 @@ mountroot()
 	    mount -o bind /$dir ${rootmnt}/oldroot/$dir
 	fi
     done
+    if [ ! -f ${rootmnt}/etc/init ] ; then
+	ln -s -f /sbin/init ${rootmnt}/etc/init
+    fi
 # inutile d'après init
 #    umount /proc/bus/usb
 #    umount /proc
