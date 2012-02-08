@@ -1,0 +1,42 @@
+#!/bin/sh
+
+PREREQ=""
+
+prereqs()
+{
+	echo "$PREREQ"
+}
+
+case $1 in
+# get pre-requisites
+prereqs)
+	prereqs
+	exit 0
+	;;
+esac
+
+# Step 1 - Basic tools
+if [ ! -x /bin/loadkeys ] ; then
+	exit 0
+fi
+
+. /usr/share/initramfs-tools/hook-functions
+copy_exec /bin/loadkeys /bin
+
+if [ -f /etc/clavier.kmap.gz ] ; then
+    cp /etc/clavier.kmap.gz ${DESTDIR}/etc/boottime.kmap.gz
+fi
+
+# Step 2 - Check for UTF8 console
+if [ ! -x /usr/bin/kbd_mode ]; then
+	exit 0
+fi
+
+if [ -r /etc/environment ]; then
+	env="/etc/environment"
+elif [ -r /etc/default/locale ]; then
+	env="/etc/default/locale"
+else
+	exit 0
+fi
+exit 0
