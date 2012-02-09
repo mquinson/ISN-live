@@ -1,3 +1,11 @@
+08/02/2012
+
+L'initramfs est pratiquement fait. Mise en place de la dépendance des extensions, mise en place de 3 types
+de boute fast = sd/hd, medium=!sr!scd et all=tout (loop, ram et fd sont écartés d'office).
+Début de conception d'une image CD type permettant soit un CD live, soit une clef. (inachevé)
+
+03/02/2012
+
 Visiblement, la ligne de commande est parsée et boot=xxx est envoyée
 dans la variable BOOT
 

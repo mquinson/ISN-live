@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# Ce script permet de créer un CD distribuant ClefAgreg
+# Il suffit sous ClefAgreg de faire 
+# $ cd /oldroot/cdrom
+# $ sudo makecd
+#
+# Le fichier se trouve alors dans /tmp
+#
+# Attention, il peut être gros (il reproduit toute votre clef), veillez
+# à avoir assez de RAM.
+#
+if [ ! -f isolinux/linux26 ] ; then 
+mv linux26 isolinux
+fi
+if [ ! -f isolinux/minirt26.gz ] ; then 
+mv minirt26.gz isolinux
+fi
+mkisofs -v -l -ldots -A "ClefAgreg" -P "ClefAgreg" -p "F.Boisson" -V "CLefAgreg" -c agreg/boot.cat -b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -boot-info-table -o /tmp/BootCD.iso .
+ls -l /tmp/BootCD*
