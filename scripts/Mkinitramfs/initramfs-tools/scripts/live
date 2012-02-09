@@ -15,6 +15,9 @@ MARQUEUR=${ISN_DIR}/${ISN_NAME}
 # that is vfat on my test.
 BRUTAL=Yes
 DEBUG=No
+# 12 chiffres + un ^J dans la fin des extensions
+MAX_LONGUEUR=13
+
 
 BASEROOT=/AGREG
 MONTAGE=/cdrom
@@ -139,6 +142,46 @@ pre_mountroot()
     fi
 }
 
+# enchaine la dépendance des extensions, fonction récursive (Caml power)
+# avec TAB qui sert de pile et NOM qui sauvegarde les arguments successifs
+
+analyse_extension ()
+{
+NOM[$2]=$1
+if `tail -c $MAX_LONGUEUR $1 | grep -q -E "^[0-9 ]*$"` ; then
+# extension avec dépendances
+    LONGUEUR=`tail -c $MAX_LONGUEUR ${NOM[$2]}`
+    LONGUEUR=`expr $LONGUEUR + 0`
+    LONGUEUR_REELLE=`ls -l ${NOM[$2]} | awk '{print $5}'`
+    LST=`tail -c $[$LONGUEUR_REELLE - $LONGUEUR] ${NOM[$2]}`
+        for f in $LST ; do
+	    if `echo $f | grep -q extension_` ; then
+		unset TAB[$[$2 +1]]
+		analyse_extension $f $[$2 + 1]
+		TAB[$2]="${TAB[$2]} ${TAB[$[$2 + 1]]}"
+	    fi
+	done
+fi
+# sinon on le met direct
+TAB[$2]="${TAB[$2]} ${NOM[$2]}"
+}
+
+# analyse une suite d'extensions en ne répétant pas le chargement d'extensions
+analyse_liste ()
+{
+LISTE=""
+while [ ! -z $1 ] ; do
+    analyse_extension $1 0
+    RES=${TAB[0]}
+    for i in $RES ; do
+	if `echo $LISTE | grep -v -q $i` ; then
+	    LISTE=$LISTE" "$i
+	fi
+    done
+    shift
+done
+echo $LISTE
+}
 
 mount_base()
 {
@@ -162,8 +205,6 @@ mount_base()
     modprobe squashfs
     mount ${MONTAGE}/${ISN_DIR}/${ISN_NAME} $BASEROOT -t squashfs -o loop
 }
-
-
 
 mountroot()
 {
@@ -248,7 +289,7 @@ mountroot()
     
 # recherche d'une extension
 #
-# TODO: Prise en compte de la fin de l'extension pour hierarchiser
+# Prise en compte de la fin de l'extension pour hierarchiser
 # le chargement des extensions. Bon, dans un premier temps pas urgent
 # chargement donné soit par un fichier ordre_extensions, soit par
 # date du plus vieux au plus récent.
@@ -260,6 +301,8 @@ mountroot()
     else
 	LISTE_EXT=`ls -tr ${MONTAGE}/${ISN_DIR}/extension*.sqh`
     fi
+    analyse_liste $LISTE_EXT
+    LISTE_EXT=$LISTE
     for fichier in $LISTE_EXT ; do
 	if [ ! -b /dev/loop$INDICE ] ; then
 	    cd /dev
