@@ -5,21 +5,28 @@
 MAX_LONGUEUR=13
 analyse_extension ()
 {
-NOM[$2]=$1
+eval NOM_$2=$1
+#eval echo NOM_$2 = \$NOM_$2
 if `tail -c $MAX_LONGUEUR $1 | grep -q -E "^[0-9 ]*$"` ; then
-    LONGUEUR=`tail -c $MAX_LONGUEUR ${NOM[$2]}`
+    eval NOMB=\$NOM_$2
+#    echo NOMB = $NOMB
+    LONGUEUR=`tail -c $MAX_LONGUEUR $NOMB`
     LONGUEUR=`expr $LONGUEUR + 0`
-    LONGUEUR_REELLE=`ls -l ${NOM[$2]} | awk '{print $5}'`
-    LST=`tail -c $[$LONGUEUR_REELLE - $LONGUEUR] ${NOM[$2]}`
+    LONGUEUR_REELLE=`ls -l ${NOMB} | awk '{print $5}'`
+    LST=`tail -c $[$LONGUEUR_REELLE - $LONGUEUR] ${NOMB}`
         for f in $LST ; do
 	    if `echo $f | grep -q extension_` ; then
-		unset TAB[$[$2 +1]]
-		analyse_extension $f $[$2 + 1]
-		TAB[$2]="${TAB[$2]} ${TAB[$[$2 + 1]]}"
+		NEXT=$[$2 + 1]
+#		echo Next=$NEXT
+		eval unset TAB_$NEXT
+		analyse_extension $f $NEXT
+		eval TAB_$2=\"\$TAB_$2 \$TAB_$NEXT\"
+#		eval echo TAB_$2 donne \$TAB_$2
 	    fi
 	done
 fi
-TAB[$2]="${TAB[$2]} ${NOM[$2]}"
+eval TAB_$2=\"\$TAB_$2 \$NOM_$2\"
+#eval echo TAB_$2 = \$TAB_$2
 }
 
 analyse_liste ()
@@ -27,7 +34,7 @@ analyse_liste ()
 LISTE=""
 while [ ! -z $1 ] ; do
     analyse_extension $1 0
-    RES=${TAB[0]}
+    eval RES=\$TAB_0
     for i in $RES ; do
 	if `echo $LISTE | grep -v -q $i` ; then
 	    LISTE=$LISTE" "$i
