@@ -8,3 +8,4 @@ atkbd
 sg 
 unix
 squashfs
+usbhid

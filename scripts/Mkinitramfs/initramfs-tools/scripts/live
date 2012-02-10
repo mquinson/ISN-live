@@ -72,13 +72,20 @@ pre_mountroot()
     for ATESTER in $CANDIDATS ; do
 #	        echo $ATESTER
 		# give hint about renamed root
+	if [  $DEBUG = "Yes" ] ; then echo "Test de "$ATESTER ; fi
 	case "${ATESTER}" in 
+# bon, nothing to do pour ceux là next candidat!!
 	    loop*)
 		;;
 	    ram*)
-# bon, nothing to do next candidats
+		;;
+	    fd*)
 		;;
 	    *)
+	    if (((`echo $ATESTER | grep -q -E "^sd*"`) && (`grep -q -E "live *= *fast" /proc/cmdline`)) || \
+	       ((`echo $ATESTER | grep -v -q -E "^scd*"`) && (`echo $ATESTER | grep -v -q -E "^sr*"`) && (`grep -q -E "live *= *medium" /proc/cmdline`)) || \
+	       (`grep -q -E "live *= *all" /proc/cmdline`)) ; then
+		if [  $DEBUG = "Yes" ] ; then echo "Candidat "$ATESTER ; fi
 		FS_TYPE=$(get_fstype "/dev/${ATESTER}")
 		if [ $DEBUG = "Yes" ] ; then echo $FS_TYPE ;fi
 		if [ "$FS_TYPE" = "unknown" ] ; then
@@ -132,6 +139,9 @@ pre_mountroot()
 		    fi
 		    umount $MONTAGE 2> /dev/null
 		    fi
+	    else
+	    if [  $DEBUG = "Yes" ] ; then echo "On recale "$ATESTER ; fi
+	    fi
 	esac
 	if [ ! -z $ROOT ] ; then break ; fi
     done
@@ -144,26 +154,33 @@ pre_mountroot()
 
 # enchaine la dépendance des extensions, fonction récursive (Caml power)
 # avec TAB qui sert de pile et NOM qui sauvegarde les arguments successifs
+# sauf qu'il a fallu avoir recours à eval. Faire du récursif avec busybox, 
+# fallait oser!
 
 analyse_extension ()
 {
-NOM[$2]=$1
+eval NOM_$2=$1
+#eval echo NOM_$2 = \$NOM_$2
 if `tail -c $MAX_LONGUEUR $1 | grep -q -E "^[0-9 ]*$"` ; then
-# extension avec dépendances
-    LONGUEUR=`tail -c $MAX_LONGUEUR ${NOM[$2]}`
+    eval NOMB=\$NOM_$2
+#    echo NOMB = $NOMB
+    LONGUEUR=`tail -c $MAX_LONGUEUR $NOMB`
     LONGUEUR=`expr $LONGUEUR + 0`
-    LONGUEUR_REELLE=`ls -l ${NOM[$2]} | awk '{print $5}'`
-    LST=`tail -c $[$LONGUEUR_REELLE - $LONGUEUR] ${NOM[$2]}`
-        for f in $LST ; do
-	    if `echo $f | grep -q extension_` ; then
-		unset TAB[$[$2 +1]]
-		analyse_extension $f $[$2 + 1]
-		TAB[$2]="${TAB[$2]} ${TAB[$[$2 + 1]]}"
-	    fi
-	done
+    LONGUEUR_REELLE=`ls -l ${NOMB} | awk '{print $5}'`
+    LST=`tail -c $[$LONGUEUR_REELLE - $LONGUEUR] ${NOMB}`
+    for f in $LST ; do
+	if `echo $f | grep -q extension_` ; then
+	    NEXT=$[$2 + 1]
+#		echo Next=$NEXT
+	    eval unset TAB_$NEXT
+	    analyse_extension $f $NEXT
+	    eval TAB_$2=\"\$TAB_$2 \$TAB_$NEXT\"
+#		eval echo TAB_$2 donne \$TAB_$2
+	fi
+    done
 fi
-# sinon on le met direct
-TAB[$2]="${TAB[$2]} ${NOM[$2]}"
+eval TAB_$2=\"\$TAB_$2 \$NOM_$2\"
+#eval echo TAB_$2 = \$TAB_$2
 }
 
 # analyse une suite d'extensions en ne répétant pas le chargement d'extensions
@@ -172,7 +189,7 @@ analyse_liste ()
 LISTE=""
 while [ ! -z $1 ] ; do
     analyse_extension $1 0
-    RES=${TAB[0]}
+    eval RES=\$TAB_0
     for i in $RES ; do
 	if `echo $LISTE | grep -v -q $i` ; then
 	    LISTE=$LISTE" "$i
@@ -180,7 +197,7 @@ while [ ! -z $1 ] ; do
     done
     shift
 done
-echo $LISTE
+#echo $LISTE
 }
 
 mount_base()
