@@ -26,9 +26,9 @@ chroot chroot sh -c "apt-get update; apt-get -t squeeze-backports install --yes 
 kver=`ls chroot/lib/modules/ |sort -r|head -n 1`
 
 echo "XXX Generate the initrd"
-cp -r scripts/Mkinitramfs/ chroot/tmp
-chroot chroot sh -c "mkinitramfs -d /tmp/Mkinitramfs/initramfs-tools/ -o /tmp/initrd.gz $kver"
-rm -rf chroot/tmp/Mkinitramfs
+mkdir -p chroot/etc/ISN-live/initramfs
+cp -r scripts/Mkinitramfs/initramfs-tools/* chroot/etc/ISN-live/initramfs
+chroot chroot sh -c "mkinitramfs -d /etc/ISN-live/initramfs/ -o /tmp/initrd.gz $kver"
 
 echo "XXX Compressing the squash filesystem"
 mksquashfs chroot basesystem.sqh
