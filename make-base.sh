@@ -23,14 +23,9 @@ sh -c "echo 'deb http://backports.debian.org/debian-backports squeeze-backports 
 
 echo "XXX install a kernel"
 chroot chroot sh -c "apt-get update; apt-get -t squeeze-backports install --yes linux-image-amd64"
-kver=`ls chroot/lib/modules/ |sort -r|head -n 1`
 
 echo "XXX Generate the initrd"
-rm -rf chroot/etc/ISN-live/initramfs
-mkdir -p chroot/etc/ISN-live/initramfs
-cp -r scripts/Mkinitramfs/initramfs-tools/* chroot/etc/ISN-live/initramfs
-chroot chroot sh -c "mkinitramfs -d /etc/ISN-live/initramfs/ -o /boot/initrd.gz $kver"
-cp chroot/tmp/initrd.gz .
+./make-initrd.sh
 
 echo "XXX Compressing the squash filesystem"
 mksquashfs chroot basesystem.sqh
