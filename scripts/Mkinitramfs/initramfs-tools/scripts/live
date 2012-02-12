@@ -1,26 +1,27 @@
 # live filesystem mounting			-*- shell-script -*-
 
-# Parameter: none
-# Echos devices tried to get root
-#       built of home 
-# Return value: indicates if root is mount
+ISN_DIR=live
+ISN_NAME=live
+ISN_USER=live
+BASEROOT=/AGREG
+MONTAGE=/mnt
 
 RAMSIZE=1000000
-ISN_DIR=agreg
-ISN_NAME=agreg
-ISN_USER=agreg
+
 LISTE_EXTENSIONS=extensions_${ISN_NAME}
 MARQUEUR=${ISN_DIR}/${ISN_NAME}
-# if BRUTAL then even unknown FS are tested (sometimes this abruti doesn't known
-# that is vfat on my test.
+# if BRUTAL then even unknown FS are tested (sometimes this morron don't seem to recognize vfats)
 BRUTAL=Yes
 DEBUG=No
 # 12 chiffres + un ^J dans la fin des extensions
 MAX_LONGUEUR=13
 
 
-BASEROOT=/AGREG
-MONTAGE=/cdrom
+
+# Parameter: none
+# Echos devices tried to get root
+#       built of home 
+# Return value: indicates if root is mount
 
 get_fstype ()
 {
