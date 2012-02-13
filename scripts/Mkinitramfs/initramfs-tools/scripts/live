@@ -115,7 +115,10 @@ pre_mountroot()
 		[ $DEBUG = "Yes" ] && echo -n "subdevice: ${SOUSPERIF} (fs: $FS_TYPE) "
 		if [ ! "$FS_TYPE" = "unknown" ] ; then
 		    modprobe $FS_TYPE 2> /dev/null
-		    mount -t $FS_TYPE /dev/${SOUSPERIF} $MONTAGE 2> /dev/null
+		    if ! mount -t $FS_TYPE /dev/${SOUSPERIF} $MONTAGE 2> /tmp/err ; then
+			[ $DEBUG = "Yes" ] && echo "Failed to mount /dev/$SOUSPERIF: "`cat /tmp/err`
+		    fi
+		    
 		    if [ -f ${MONTAGE}/${MARQUEUR} ] ; then
 			[ $DEBUG = "Yes" ] && echo "Found the mark on $SOUSPERIF"
 			FOUNDROOT=/dev/${SOUSPERIF}
