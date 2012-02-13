@@ -117,7 +117,7 @@ pre_mountroot()
     
     for ATESTER in $LIST ; do	    
 		FS_TYPE=$(get_fstype "/dev/${ATESTER}")
-		[ $DEBUG = "Yes" ] && echo "Candidat $ATESTER (fs: $FS_TYPE)"
+		[ $DEBUG = "Yes" ] && echo "Testing $ATESTER (fs: $FS_TYPE)"
 
 		if [ "$FS_TYPE" = "unknown" ] ; then
 		    if [ $BRUTAL = "Yes" ] ; then
@@ -135,19 +135,18 @@ pre_mountroot()
 		    fi
 		    for SOUSATESTER in `ls -d /sys/block/${ATESTER}/${ATESTER}* 2> /dev/null` ; do
 			SOUSPERIF=${SOUSATESTER#/sys/block/${ATESTER}/}
-			if [ $DEBUG = "Yes" ] ; then echo ${SOUSPERIF} ; fi
 			FS_TYPE=$(get_fstype "/dev/${SOUSPERIF}")
-			if [ $DEBUG = "Yes" ] ; then echo $FS_TYPE ; fi
+			[ $DEBUG = "Yes" ] && echo -n "subdevice: ${SOUSPERIF} (fs: $FS_TYPE)"
 			if [ ! "$FS_TYPE" = "unknown" ] ; then
 			    modprobe $FS_TYPE 2> /dev/null
 			    mount -t $FS_TYPE /dev/${SOUSPERIF} $MONTAGE 2> /dev/null
 			    if [ -f ${MONTAGE}/${MARQUEUR} ] ; then
-				if [ $DEBUG = "Yes" ] ; then echo Found $SOUSPERIF ; fi
+				[ $DEBUG = "Yes" ] && echo "Found the mark on $SOUSPERIF"
 				FOUNDROOT=/dev/${SOUSPERIF}
-				umount  $MONTAGE
+				umount $MONTAGE
 				break
 			    else 
-			       [ $DEBUG = "Yes" ] && echo "not found "
+			       [ $DEBUG = "Yes" ] && echo "mark not found"
 			    fi
 			    umount $MONTAGE 2> /dev/null
 			else if [ $BRUTAL = "Yes" ] ; then
@@ -162,7 +161,6 @@ pre_mountroot()
 			        [ $DEBUG = "Yes" ] && echo "not found "
 			    fi
 			    umount $MONTAGE 2> /dev/null
-			    if [ $DEBUG = "Yes" ] ; then echo "OK" ; fi
 			fi
 		fi
 		    done
