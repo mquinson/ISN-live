@@ -65,7 +65,8 @@ fi
 cp initrd.gz mountpoint/boot
 
 echo "XXX Install grub onto the stick"
-echo "(if it fails because of space shortage, try starting gparted to reduce the size of the partition by one Mb, placed at the begining of the disk. One day, that will be automated)"
+echo "(if it fails with the message 'Your embedding area is unusually small. core.img won't fit in it', try starting gparted to reduce the size of the partition by one Mb, placed at the begining of the disk. One day, that will be automated)"
+# http://ubuntuforums.org/archive/index.php/t-1528529.html
 grub-install --boot-directory=mountpoint/boot $STICK
 
 umount mountpoint

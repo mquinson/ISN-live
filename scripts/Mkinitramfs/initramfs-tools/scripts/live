@@ -51,25 +51,25 @@ pre_mountroot()
     [ "$quiet" != "y" ] && log_end_msg
     
     
-    log_begin_msg "Searching for base system"
+    echo "Searching for base system (cmdline: `cat /proc/commandline`)..."
     
     # Default delay is 10s
     if [ -z "${LIVEDELAY}" ]; then
-	delai=10
+	delay=10
     else
-	delai=${LIVEDELAY}
+	delay=${LIVEDELAY}
     fi    
-    /bin/sleep $delai
+    /bin/sleep $delay
     
 
     # mount point
     mkdir -p $MONTAGE
     
     # We need to find our extension files. 
-    # (we look on every devices listed in /sys/block/*, but ram and loop ones)
+    # (we look on every devices listed in /sys/block/*, but ram and
+    #  loop ones, searching for ${MARQUEUR} on it)
     
-    for ATESTER in `ls /sys/block` ; do
-    
+    for ATESTER in `ls /sys/block` ; do            
 	case "${ATESTER}" in 
 	    # nothing for these ones, proceed!
 	    loop*)
@@ -138,7 +138,7 @@ pre_mountroot()
 		    umount $MONTAGE 2> /dev/null
 		    fi
 	    else
-	    if [  $DEBUG = "Yes" ] ; then echo "On recale "$ATESTER ; fi
+	    [ $DEBUG = "Yes" ] && echo "On recale $ATESTER"
 	    fi
 	    [ "$quiet" != "y" ] && log_end_msg
 	esac
