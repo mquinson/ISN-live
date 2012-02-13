@@ -46,12 +46,12 @@ get_fstype ()
 
 pre_mountroot()
 {
-    [ "$quiet" != "y" ] && log_begin_msg "Running /scripts/live-top"
+    log_begin_msg "Running /scripts/live-top"
     run_scripts /scripts/live-top
-    [ "$quiet" != "y" ] && log_end_msg
+    log_end_msg
     
     
-    echo "Searching for base system (cmdline: `cat /proc/commandline`)..."
+    _log_msg "Searching for base system...\n"
     
     # Default delay is 10s
     if [ -z "${LIVEDELAY}" ]; then
@@ -65,11 +65,23 @@ pre_mountroot()
     # mount point
     mkdir -p $MONTAGE
     
+    # Check the kind of boot mode chosen by the user
+    if grep -q -E "live *= *fast" /proc/cmdline ; then
+      BOOTMODE=FAST
+    else if grep -q -E "live *= *medium" /proc/cmdline ; then
+      BOOTMODE=MEDIUM
+    else
+      BOOTMODE=SLOW
+    fi; fi
+    _log_msg "BOOTMODE: $BOOTMODE\n"
+    
     # We need to find our extension files. 
     # (we look on every devices listed in /sys/block/*, but ram and
     #  loop ones, searching for ${MARQUEUR} on it)
     
+    LIST=""
     for ATESTER in `ls /sys/block` ; do            
+        _log_msg "considering $ATESTER\n"
 	case "${ATESTER}" in 
 	    # nothing for these ones, proceed!
 	    loop*)
@@ -79,21 +91,44 @@ pre_mountroot()
 	    fd*)
 		;;
 	    *)
-	    [ "$quiet" != "y" ] && log_begin_msg "Testing $ATESTER"
-	    if (((`echo $ATESTER | grep -q -E "^sd*"`) && (`grep -q -E "live *= *fast" /proc/cmdline`)) || \
-	       ((`echo $ATESTER | grep -v -q -E "^scd*"`) && (`echo $ATESTER | grep -v -q -E "^sr*"`) && (`grep -q -E "live *= *medium" /proc/cmdline`)) || \
-	       (`grep -q -E "live *= *all" /proc/cmdline`)) ; then
-		if [  $DEBUG = "Yes" ] ; then echo "Candidat "$ATESTER ; fi
+	    take=0
+	    case "$BOOTMODE" in
+	      FAST)
+	        if `echo $ATESTER | grep -q -E "^sd*"` ; then
+  	          take=1
+		fi ;;
+	      MEDIUM)
+	        if ((`echo $ATESTER | grep -v -q -E "^scd*"`) &&
+                    (`echo $ATESTER | grep -v -q -E "^sr*"`) ) ; then
+  	          take=1
+		fi ;;
+              SLOW)
+  	        take=1
+	    esac
+	    if [ $take = 1 ] ; then
+  	        LIST="$LIST $ATESTER"
+	    else
+	       _log_msg "Device $ATESTER ruled out because BOOTMODE is set to $BOOTMODE"
+	    fi
+	    unset take
+	esac
+    done
+    _log_msg "Liste des candidats: $LIST\n"
+    
+    for ATESTER in $LIST ; do	    
 		FS_TYPE=$(get_fstype "/dev/${ATESTER}")
-		if [ $DEBUG = "Yes" ] ; then echo $FS_TYPE ;fi
+		[ $DEBUG = "Yes" ] && echo "Candidat $ATESTER (fs: $FS_TYPE)"
+
 		if [ "$FS_TYPE" = "unknown" ] ; then
 		    if [ $BRUTAL = "Yes" ] ; then
 			if [ $DEBUG = "Yes" ] ; then echo -n "$ATESTER"... ; fi
 			mount /dev/${ATESTER} $MONTAGE 2> /dev/null
 			if [ -f ${MONTAGE}/${MARQUEUR} ] ; then
 			    if [ $DEBUG = "Yes" ] ; then echo Found $ATESTER ; fi
-			    ROOT=/dev/${ATESTER}
+			    FOUNDROOT=/dev/${ATESTER}
 			    umount  $MONTAGE
+			else 
+			    [ $DEBUG = "Yes" ] && echo "not found"
 			fi
 			umount $MONTAGE 2> /dev/null
 			if [ $DEBUG = "Yes" ] ; then echo "OK" ; fi
@@ -108,9 +143,11 @@ pre_mountroot()
 			    mount -t $FS_TYPE /dev/${SOUSPERIF} $MONTAGE 2> /dev/null
 			    if [ -f ${MONTAGE}/${MARQUEUR} ] ; then
 				if [ $DEBUG = "Yes" ] ; then echo Found $SOUSPERIF ; fi
-				ROOT=/dev/${SOUSPERIF}
+				FOUNDROOT=/dev/${SOUSPERIF}
 				umount  $MONTAGE
 				break
+			    else 
+			       [ $DEBUG = "Yes" ] && echo "not found "
 			    fi
 			    umount $MONTAGE 2> /dev/null
 			else if [ $BRUTAL = "Yes" ] ; then
@@ -118,9 +155,11 @@ pre_mountroot()
 			    mount /dev/${SOUSPERIF} $MONTAGE 2> /dev/null
 			    if [ -f ${MONTAGE}/${MARQUEUR} ] ; then
 				if [ $DEBUG = "Yes" ] ; then echo Found $SOUSPERIF ; fi
-				ROOT=/dev/${SOUSPERIF}
+				FOUNDROOT=/dev/${SOUSPERIF}
 				umount  $MONTAGE
 				break
+			    else
+			        [ $DEBUG = "Yes" ] && echo "not found "
 			    fi
 			    umount $MONTAGE 2> /dev/null
 			    if [ $DEBUG = "Yes" ] ; then echo "OK" ; fi
@@ -132,19 +171,15 @@ pre_mountroot()
 		    mount -t $FS_TYPE /dev/${ATESTER} $MONTAGE 2> /dev/null
 		    if [ -f ${MONTAGE}/${MARQUEUR} ] ; then
 			if [ $DEBUG = "Yes" ] ; then echo Found $ATESTER ; fi
-			    ROOT=/dev/${ATESTER}
+			    FOUNDROOT=/dev/${ATESTER}
 			    umount  $MONTAGE
 		    fi
 		    umount $MONTAGE 2> /dev/null
 		    fi
-	    else
-	    [ $DEBUG = "Yes" ] && echo "On recale $ATESTER"
-	    fi
-	    [ "$quiet" != "y" ] && log_end_msg
-	esac
-	if [ ! -z $ROOT ] ; then break ; fi
+	    log_end_msg
+	if [ -n $FOUNDROOT ] ; then echo "Yuhu: FOUNDROOT=$FOUNDROOT"; break ; fi
     done
-    if [ -z $ROOT ] ; then
+    if [ -z $FOUNDROOT ] ; then
 	echo "Base system not found, dropping to a limited shell"
 	echo "Sorry and good luck..."
 	panic "File ${MARQUEUR} not found on block devices, dropping shell"
@@ -226,7 +261,7 @@ mountroot()
 {
     pre_mountroot
 
-    mount_base ${ROOT}
+    mount_base ${FOUNDROOT}
 # on test l'existence du répertoire /boot sur l'arborescence montée
     if [ -d ${BASEROOT}/boot ] ; then
 # on enchaine sur le script de ClefAgreg    
