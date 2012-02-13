@@ -1,7 +1,7 @@
 # live filesystem mounting			-*- shell-script -*-
 
-ISN_DIR=live
-ISN_NAME=live
+ISN_DIR=boot
+ISN_NAME=basesystem.sqh
 ISN_USER=live
 BASEROOT=/LIVE
 MONTAGE=/mnt

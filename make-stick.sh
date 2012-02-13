@@ -56,16 +56,16 @@ rm -rf mountpoint
 mkdir mountpoint	
 
 mount $PART mountpoint
-mkdir mountpoint/boot
-if [ -e mountpoint/basesystem.sqh ] ; then
+[ -e mountpoint/boot ] || mkdir mountpoint/boot
+if [ -e mountpoint/boot/basesystem.sqh ] ; then
   echo "The base system already exists, do not copy it again (to save time)"
 else  
-  cp basesystem.sqh mountpoint
+  cp basesystem.sqh mountpoint/boot
 fi
 cp initrd.gz mountpoint/boot
 
 echo "XXX Install grub onto the stick"
 echo "(if it fails because of space shortage, try starting gparted to reduce the size of the partition by one Mb, placed at the begining of the disk. One day, that will be automated)"
-grub-install --boot-directory=mountpoint/boot $PART
+grub-install --boot-directory=mountpoint/boot $STICK
 
 umount mountpoint
