@@ -17,33 +17,6 @@ DEBUG=Yes
 MAX_LONGUEUR=13
 
 
-
-# Parameter: none
-# Echos devices tried to get root
-#       built of home 
-# Return value: indicates if root is mount
-
-get_fstype ()
-{
-    local FS FSTYPE FSSIZE RET
-    FS="${1}"
-
-	# vol_id has a more complete list of file systems,
-	# but fstype is more robust
-    eval $(fstype "${FS}" 2> /dev/null)
-    if [ "$FSTYPE" = "unknown" ] && [ -x /lib/udev/vol_id ]; then
-	FSTYPE=$(/lib/udev/vol_id -t "${FS}" 2> /dev/null)
-    fi
-    RET=$?
-
-    if [ -z "${FSTYPE}" ]; then
-	FSTYPE="unknown"
-    fi
-
-    echo "${FSTYPE}"
-    return ${RET}
-}
-
 pre_mountroot()
 {
     log_begin_msg "Running /scripts/live-top"
@@ -115,6 +88,9 @@ pre_mountroot()
     done
     _log_msg "Liste des candidats: $LIST\n"
     
+    # Load some more filesystems to help guessing the partition content
+    modprobe vfat fat ext2 
+
     for ATESTER in $LIST ; do	    
 	FS_TYPE=$(get_fstype "/dev/${ATESTER}")
 	[ $DEBUG = "Yes" ] && echo "Testing $ATESTER (fs: $FS_TYPE)"
@@ -126,9 +102,9 @@ pre_mountroot()
 		if [ -f ${MONTAGE}/${MARQUEUR} ] ; then
 		    if [ $DEBUG = "Yes" ] ; then echo Found $ATESTER ; fi
 		    FOUNDROOT=/dev/${ATESTER}
-		    umount  $MONTAGE
+		    umount $MONTAGE
 		else 
-		    [ $DEBUG = "Yes" ] && echo "not found"
+		    [ $DEBUG = "Yes" ] && echo "not found"
 		fi
 		umount $MONTAGE 2> /dev/null
 		if [ $DEBUG = "Yes" ] ; then echo "OK" ; fi
@@ -136,7 +112,7 @@ pre_mountroot()
 	    for SOUSATESTER in `ls -d /sys/block/${ATESTER}/${ATESTER}* 2> /dev/null` ; do
 		SOUSPERIF=${SOUSATESTER#/sys/block/${ATESTER}/}
 		FS_TYPE=$(get_fstype "/dev/${SOUSPERIF}")
-		[ $DEBUG = "Yes" ] && echo -n "subdevice: ${SOUSPERIF} (fs: $FS_TYPE)"
+		[ $DEBUG = "Yes" ] && echo -n "subdevice: ${SOUSPERIF} (fs: $FS_TYPE) "
 		if [ ! "$FS_TYPE" = "unknown" ] ; then
 		    modprobe $FS_TYPE 2> /dev/null
 		    mount -t $FS_TYPE /dev/${SOUSPERIF} $MONTAGE 2> /dev/null
@@ -150,10 +126,10 @@ pre_mountroot()
 		    fi
 		    umount $MONTAGE 2> /dev/null
 		else if [ $BRUTAL = "Yes" ] ; then
-		    if [ $DEBUG = "Yes" ] ; then echo -n "$SOUSPERIF"... ; fi
+		    [ $DEBUG = "Yes" ] && echo -n "$SOUSPERIF tested anyway... "
 		    mount /dev/${SOUSPERIF} $MONTAGE 2> /dev/null
 		    if [ -f ${MONTAGE}/${MARQUEUR} ] ; then
-			if [ $DEBUG = "Yes" ] ; then echo Found $SOUSPERIF ; fi
+			[ $DEBUG = "Yes" ] && echo "Found mark on $SOUSPERIF"
 			FOUNDROOT=/dev/${SOUSPERIF}
 			umount  $MONTAGE
 			break
@@ -175,7 +151,7 @@ pre_mountroot()
 	    umount $MONTAGE 2> /dev/null
 	    fi
 	    log_end_msg
-	    if [ -n $FOUNDROOT ] ; then echo "Yuhu: FOUNDROOT=$FOUNDROOT"; break ; fi
+	    if [ ! -z $FOUNDROOT ] ; then break ; fi
     done
     if [ -z $FOUNDROOT ] ; then
 	echo "Base system not found, dropping to a limited shell"
