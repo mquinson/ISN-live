@@ -24,9 +24,10 @@ fi
 echo "XXX Pick the right stick to use"
 STICKS=`ls -l /dev/disk/by-id/ | grep " usb-" | awk '{print $11}'  | sed -e 's|^.*\(sd.\)[0-9]*|\1|' | sort -u`
 
-BUTTON="stop" echo -n > /tmp/USB_message
+BUTTON="stop"
+echo -n > /tmp/USB_message
 echo "Stop: Stop the stick creation right away">> /tmp/USB_message
-echo "fake: make a disk image instead of using a real disk">> /tmp/USB_message
+#echo "fake: make a disk image instead of using a real disk">> /tmp/USB_message
 for s in $STICKS ; do 
   unset STICK_NAME
   STICK_NAME=`ls -l /dev/disk/by-id/ | grep "$s\$" | sed -e 's/^.*usb-\([^_]*_[^_]*_[^_]*\)_.*$/\1/'`
@@ -56,7 +57,9 @@ rm -rf mountpoint
 mkdir mountpoint	
 
 mount $PART mountpoint
-[ -e mountpoint/boot ] || mkdir mountpoint/boot
+if [ ! -e mountpoint/boot ] ; then
+  mkdir mountpoint/boot
+fi
 if [ -e mountpoint/boot/basesystem.sqh ] ; then
   echo "The base system already exists, do not copy it again (to save time)"
 else  
