@@ -1,6 +1,10 @@
 #! /bin/sh
 
-
+# Testing user ID 
+if [ "$UID" != "0" ]; then  
+  echo "Please make sure to become root before running me" 2>&1 ;
+  exit 1
+fi
 
 set -ex
 
