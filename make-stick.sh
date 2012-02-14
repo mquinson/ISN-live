@@ -65,8 +65,8 @@ rm -rf mountpoint
 mkdir mountpoint	
 
 mount $PART mountpoint
-if [ ! -e mountpoint/boot ] ; then
-  mkdir mountpoint/boot
+if [ ! -e mountpoint/boot/grub ] ; then
+  mkdir -p mountpoint/boot/grub
 fi
 if [ -e mountpoint/boot/basesystem.sqh ] ; then
   echo "The base system already exists, do not copy it again (to save time)"
@@ -74,6 +74,7 @@ else
   cp basesystem.sqh mountpoint/boot
 fi
 cp initrd.gz mountpoint/boot
+cp scripts/grub.cfg mountpoint/boot/grub
 
 echo "XXX Install grub onto the stick"
 echo "(if it fails with the message 'Your embedding area is unusually small. core.img won't fit in it', try starting gparted to reduce the size of the partition by one Mb, placed at the begining of the disk. One day, that will be automated)"
