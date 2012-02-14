@@ -2,6 +2,14 @@
 
 # Create the initrd within the chroot
 
+# Testing user ID 
+uid=$(/usr/bin/id -u)
+if [ $uid != "0" ] ; then
+  echo "Please make sure to become root before running me" 2>&1 ; 
+  exit 1
+fi
+
+
 set -ex
 
 kver=`ls chroot/lib/modules/ |sort -r|head -n 1`

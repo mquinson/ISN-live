@@ -3,6 +3,14 @@
 # make-stick.sh: adds what's needed to boot the system from a chosen stick
 # It should not erase anything from the system (but you should make sure that you have enough room on the key)
 
+# Testing user ID 
+uid=$(/usr/bin/id -u)
+if [ $uid != "0" ] ; then
+  echo "Please make sure to become root before running me" 2>&1 ; 
+  exit 1
+fi
+
+
 set -ex
 
 ### Initial checkups
