@@ -65,8 +65,8 @@ rm -rf mountpoint
 mkdir mountpoint	
 
 mount $PART mountpoint
-if [ ! -e mountpoint/boot/grub ] ; then
-  mkdir -p mountpoint/boot/grub
+if [ ! -e mountpoint/boot ] ; then
+  mkdir mountpoint/boot
 fi
 if [ -e mountpoint/boot/basesystem.sqh ] ; then
   echo "The base system already exists, do not copy it again (to save time)"
@@ -74,11 +74,26 @@ else
   cp basesystem.sqh mountpoint/boot
 fi
 cp initrd.gz mountpoint/boot
-cp scripts/grub.cfg mountpoint/boot/grub
 
-echo "XXX Install grub onto the stick"
-echo "(if it fails with the message 'Your embedding area is unusually small. core.img won't fit in it', try starting gparted to reduce the size of the partition by one Mb, placed at the begining of the disk. One day, that will be automated)"
+#echo "XXX Install grub onto the stick"
+#echo "(if it fails with the message 'Your embedding area is unusually small. core.img won't fit in it', try starting gparted to reduce the size of the partition by one Mb, placed at the begining of the disk. One day, that will be automated)"
 # http://ubuntuforums.org/archive/index.php/t-1528529.html
-grub-install --boot-directory=mountpoint/boot $STICK
+# grub-install --boot-directory=mountpoint/boot $STICK
+
+echo "XXX Write Stick Master Boot Record"
+dd conv=notrunc bs=440 count=1 if=mbr.bin of=$STICK
+
+echo "XXX Set boot flag to first partition"
+parted $STICK  set 1 boot on
+
+echo "XXX Install syslinux onto the stick"
+syslinux -i $PART
+
+echo "XXX Give me a kernel and with an initrd, I will boot the whole world"
+cp chroot/vmlinuz mountpoint/boot
+
+echo "XXX We also need a config file for syslinux because we can't writing links on vfat fs"
+
+cp syslinux.cfg mountpoint
 
 umount mountpoint

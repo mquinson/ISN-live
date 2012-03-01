@@ -1,5 +1,6 @@
 #!/bin/sh
 
+set -ex
 # hardcoded configurable options
 # Default maximum size of dynamic ramdisk in kilobytes
 RAMSIZE=1000000

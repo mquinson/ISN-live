@@ -10,3 +10,7 @@ unix
 squashfs
 usbhid
 loop
+vfat
+aufs
+nls_cp437
+nls_utf8
