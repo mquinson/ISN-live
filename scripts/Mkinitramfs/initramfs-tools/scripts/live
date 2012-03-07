@@ -206,7 +206,7 @@ analyse_extension ()
 		NEXT=$(expr $2 + 1)
 #		echo Next=$NEXT
 		eval unset TAB_$NEXT
-		analyse_extension ${MONTAGE}/${ISN_DIR}/$f$f $NEXT
+		analyse_extension ${MONTAGE}/${ISN_DIR}/$f $NEXT
 		eval TAB_$2=\"\$TAB_$2 \$TAB_$NEXT\"
 #		eval echo TAB_$2 donne \$TAB_$2
 	    fi
