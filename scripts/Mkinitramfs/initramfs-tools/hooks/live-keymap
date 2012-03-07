@@ -24,6 +24,8 @@ fi
 copy_exec /bin/loadkeys /bin
 
 if [ -f /etc/clavier.kmap.gz ] ; then
+    mkdir -p ${DESTDIR}/usr/share/keymaps/i386/include/
+    cp /usr/share/keymaps/i386/include/* ${DESTDIR}/usr/share/keymaps/i386/include/
     cp /etc/clavier.kmap.gz ${DESTDIR}/etc/boottime.kmap.gz
 fi
 

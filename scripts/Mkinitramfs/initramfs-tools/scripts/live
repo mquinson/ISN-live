@@ -12,9 +12,11 @@ LISTE_EXTENSIONS=extensions_${ISN_NAME}
 MARQUEUR=${ISN_DIR}/${ISN_NAME}
 # if BRUTAL then even unknown FS are tested (sometimes this morron don't seem to recognize vfats)
 BRUTAL=Yes
-DEBUG=Yes 
+DEBUG=No
 # 12 chiffres + un ^J dans la fin des extensions
 MAX_LONGUEUR=13
+
+# utile
 
 get_fstype ()
 {
@@ -196,15 +198,15 @@ analyse_extension ()
 	eval NOMB=\$NOM_$2
 #    echo NOMB = $NOMB
 	LONGUEUR=`tail -c $MAX_LONGUEUR $NOMB`
-	LONGUEUR=`expr $LONGUEUR + 0`
+	LONGUEUR=$(expr $LONGUEUR + 0)
 	LONGUEUR_REELLE=`ls -l ${NOMB} | awk '{print $5}'`
-	LST=`tail -c $[$LONGUEUR_REELLE - $LONGUEUR] ${NOMB}`
+	LST=`tail -c $(expr $LONGUEUR_REELLE - $LONGUEUR) ${NOMB}`
 	for f in $LST ; do
 	    if `echo $f | grep -q extension_` ; then
-		NEXT=$[$2 + 1]
+		NEXT=$(expr $2 + 1)
 #		echo Next=$NEXT
 		eval unset TAB_$NEXT
-		analyse_extension $f $NEXT
+		analyse_extension ${MONTAGE}/${ISN_DIR}/$f$f $NEXT
 		eval TAB_$2=\"\$TAB_$2 \$TAB_$NEXT\"
 #		eval echo TAB_$2 donne \$TAB_$2
 	    fi
@@ -345,9 +347,9 @@ mountroot()
 	RAJOUT=""
 	INDICE=1
 	if [ -f ${MONTAGE}/ordre_extensions ] ; then
-	    LISTE_EXT=`cat ${MONTAGE}/ordre_extensions | sed -e 's|^|${MONTAGE}/${ISN_DIR}/|'`
+	    LISTE_EXT=$(cat ${MONTAGE}/ordre_extensions | sed -e 's|^|${MONTAGE}/${ISN_DIR}/|')
 	else
-	    LISTE_EXT=`ls -tr ${MONTAGE}/${ISN_DIR}/extension*.sqh`
+	    LISTE_EXT=$(ls -tr ${MONTAGE}/${ISN_DIR}/extension*.sqh)
 	fi
 	analyse_liste $LISTE_EXT
 	LISTE_EXT=$LISTE
