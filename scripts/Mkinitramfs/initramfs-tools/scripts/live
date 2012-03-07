@@ -16,6 +16,26 @@ DEBUG=Yes
 # 12 chiffres + un ^J dans la fin des extensions
 MAX_LONGUEUR=13
 
+get_fstype ()
+{
+        local FS FSTYPE FSSIZE RET
+        FS="${1}"
+
+        # vol_id has a more complete list of file systems,
+        # but fstype is more robust
+        eval $(fstype "${FS}" 2> /dev/null)
+        if [ "$FSTYPE" = "unknown" ] && [ -x /lib/udev/vol_id ]; then
+                FSTYPE=$(/lib/udev/vol_id -t "${FS}" 2> /dev/null)
+        fi
+        RET=$?
+
+        if [ -z "${FSTYPE}" ]; then
+                FSTYPE="unknown"
+        fi
+
+        echo "${FSTYPE}"
+        return ${RET}
+}
 
 pre_mountroot()
 {
