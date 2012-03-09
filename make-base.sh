@@ -18,11 +18,11 @@ echo "XXX download the elements"
 if [ -e debootstrap.cache.tgz ] ; then
   echo "archive already existing";
 else
-  debootstrap $INCLUDEPKG --make-tarball=debootstrap.cache.tgz stable chroot $MIRROR
+  debootstrap $INCLUDEPKG --make-tarball=debootstrap.cache.tgz --arch=i386 stable chroot $MIRROR
 fi
 
 echo "XXX building the chroot"
-debootstrap $INCLUDEPKG --unpack-tarball=`pwd`/debootstrap.cache.tgz stable chroot $MIRROR
+debootstrap $INCLUDEPKG --unpack-tarball=`pwd`/debootstrap.cache.tgz --arch=i386 stable chroot $MIRROR
 
 echo "XXX add backports to the apt sources"
 sh -c "echo 'deb http://backports.debian.org/debian-backports squeeze-backports main' >> chroot/etc/apt/sources.list"
