@@ -143,12 +143,15 @@ MONTESQH="mount -o loop -t squashfs "
 	[ ! -z "$(ls $NOM.dir/var/cache/apt/archives/*.deb)" ] && rm  $NOM.dir/var/cache/apt/archives/*.deb
 	if [ ! -z $DODPKG ] ; then
 	    mksquashfs $NOM.dir extension_$NOM.sqh -wildcards -noappend -e var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian*
+	    if [ ! -z $LSTEXT ] ; then
+		doextension.sh extension_$NOM.sqh $LSTEXT
+	    fi
 	    ARCHIVE=$(tempfile)
 	    rm $ARCHIVE
 	    mkdir -p $ARCHIVE
 	    (cd $NOM.dir ; tar c var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian* ) | (cd $ARCHIVE ; tar x)
 	    mksquashfs $ARCHIVE extension_dpkg_$NOM.sqh  -noappend
-	    doextension.sh extension_dpkg_$NOM.sqh extension_$NOM.sqh  -noappend
+	    doextension.sh extension_dpkg_$NOM.sqh extension_$NOM.sqh 
 	    rm -Rf $ARCHIVE
 	else
 	    mksquashfs $NOM.dir extension_$NOM.sqh -noappend
