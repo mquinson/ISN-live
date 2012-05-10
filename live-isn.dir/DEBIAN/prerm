@@ -1,0 +1,14 @@
+#!/bin/sh -e
+
+# remove alternatives links
+
+if [ "$1" = "remove" ]; then
+   grep -v "#backup ISN" /etc/crontab > /tmp/crontab
+   mv /etc/crontab /etc/crontab.dpkg
+   mv /tmp/crontab /etc/crontab
+
+fi
+
+
+
+exit 0

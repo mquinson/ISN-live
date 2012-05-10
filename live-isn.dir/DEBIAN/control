@@ -1,0 +1,12 @@
+Package: live-isn
+Priority: optional
+Section: x11
+Installed-Size: 16
+Maintainer: François Boisson
+Architecture: all
+Version: 1.0
+Depends: xfce4
+Description: Mise en place de script pour la clef ISN
+ Scripts de mise en place pour la clef ISN
+ . .
+

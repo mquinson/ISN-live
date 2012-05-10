@@ -1,10 +1,11 @@
 # live filesystem mounting			-*- shell-script -*-
 
-ISN_DIR=boot
-ISN_NAME=basesystem.sqh
-ISN_USER=live
-BASEROOT=/LIVE
-MONTAGE=/mnt
+ISN_DIR=agreg
+ISN_NAME=agreg
+ISN_USER=agreg
+BASEROOT=/AGREG
+MONTAGE=/cdrom
+RAMCDR=/sqh
 
 RAMSIZE=1000000
 
@@ -16,28 +17,6 @@ DEBUG=No
 # 12 chiffres + un ^J dans la fin des extensions
 MAX_LONGUEUR=13
 
-# utile
-
-get_fstype ()
-{
-        local FS FSTYPE FSSIZE RET
-        FS="${1}"
-
-        # vol_id has a more complete list of file systems,
-        # but fstype is more robust
-        eval $(fstype "${FS}" 2> /dev/null)
-        if [ "$FSTYPE" = "unknown" ] && [ -x /lib/udev/vol_id ]; then
-                FSTYPE=$(/lib/udev/vol_id -t "${FS}" 2> /dev/null)
-        fi
-        RET=$?
-
-        if [ -z "${FSTYPE}" ]; then
-                FSTYPE="unknown"
-        fi
-
-        echo "${FSTYPE}"
-        return ${RET}
-}
 
 pre_mountroot()
 {
@@ -59,7 +38,10 @@ pre_mountroot()
 
     # mount point
     mkdir -p $MONTAGE
-    
+    if grep -q -E "ramroot *= *true" /proc/cmdline ; then
+	[ $DEBUG = "Yes" ] && echo "Doing the dirtectory $RAMCDR"
+	mkdir -p $RAMCDR
+    fi
     # Check the kind of boot mode chosen by the user
     if grep -q -E "live *= *fast" /proc/cmdline ; then
 	BOOTMODE=FAST
@@ -196,15 +178,17 @@ analyse_extension ()
 #eval echo NOM_$2 = \$NOM_$2
     if `tail -c $MAX_LONGUEUR $1 | grep -q -E "^[0-9 ]*$"` ; then
 	eval NOMB=\$NOM_$2
-#    echo NOMB = $NOMB
+# echo etude NOMB = $NOMB
 	LONGUEUR=`tail -c $MAX_LONGUEUR $NOMB`
+# echo -n $LONGUEUR
 	LONGUEUR=$(expr $LONGUEUR + 0)
+# echo donne $LONGUEUR
 	LONGUEUR_REELLE=`ls -l ${NOMB} | awk '{print $5}'`
 	LST=`tail -c $(expr $LONGUEUR_REELLE - $LONGUEUR) ${NOMB}`
 	for f in $LST ; do
 	    if `echo $f | grep -q extension_` ; then
 		NEXT=$(expr $2 + 1)
-#		echo Next=$NEXT
+# echo Next=$NEXT
 		eval unset TAB_$NEXT
 		analyse_extension ${MONTAGE}/${ISN_DIR}/$f $NEXT
 		eval TAB_$2=\"\$TAB_$2 \$TAB_$NEXT\"
@@ -242,6 +226,16 @@ mount_base()
     else
 	if [ $DEBUG = "Yes" ] ; then echo mount -t $FSTYPE $1 $MONTAGE ; fi
 	mount -t $FSTYPE $1 $MONTAGE
+    fi
+# copie des fichiers de la clef en RAM
+    if grep -q -E "ramroot *= *true" /proc/cmdline ; then
+	echo "Copy all in RAM."
+	[ $DEBUG = "Yes" ] && echo "Copy on $RAMCDR"
+	cp -dpRf $MONTAGE/* $RAMCDR
+	umount $MONTAGE
+	rmdir $MONTAGE
+	mv $RAMCDR $MONTAGE
+#	exec /bin/sh
     fi
     if [ ! -b /dev/loop0 ] ; then
 	cd /dev
@@ -347,9 +341,9 @@ mountroot()
 	RAJOUT=""
 	INDICE=1
 	if [ -f ${MONTAGE}/ordre_extensions ] ; then
-	    LISTE_EXT=$(cat ${MONTAGE}/ordre_extensions | sed -e 's|^|${MONTAGE}/${ISN_DIR}/|')
+	    LISTE_EXT=$(cat ${MONTAGE}/ordre_extensions | sed -e 's|^|'${MONTAGE}/${ISN_DIR}'/|')
 	else
-	    LISTE_EXT=$(ls -tr ${MONTAGE}/${ISN_DIR}/extension*.sqh)
+	    LISTE_EXT=`ls -tr ${MONTAGE}/${ISN_DIR}/extension*.sqh`
 	fi
 	analyse_liste $LISTE_EXT
 	LISTE_EXT=$LISTE
@@ -468,8 +462,12 @@ mountroot()
 #    chroot ${rootmnt} mount /sys
 	mkdir -p ${rootmnt}/oldroot/ramdisk
 	mount -o bind /ramdisk ${rootmnt}/oldroot/ramdisk
+    if grep -q -E "ramroot *= *true" /proc/cmdline ; then
+	mv ${MONTAGE}  ${rootmnt}/oldroot
+    else
 	mkdir -p ${rootmnt}/oldroot${MONTAGE}
 	mount -o bind ${MONTAGE} ${rootmnt}/oldroot${MONTAGE}
+    fi
 	for dir in `ls -d /extension*` ; do
 	    if [ -d /$dir ] ; then
 		mkdir -p ${rootmnt}/oldroot/$dir
