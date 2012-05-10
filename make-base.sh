@@ -27,11 +27,13 @@ else
 fi
 
 echo "XXX building the chroot"
+# We add wicd, but it seems that this induces some issues sometimes, to it's better to play safe for now, and install it later with a direct apt-get
+
 debootstrap $INCLUDEPKG --unpack-tarball=`pwd`/debootstrap-${ARCH}.cache.tgz --arch ${ARCH} $DEBIAN $NAME $MIRROR
 
 echo "XXX add backports to the apt sources"
 
-# We could pick wicd for example
+
 
 mount none -t proc $NAME/proc
 mount -o bind /dev $NAME/dev
@@ -47,7 +49,7 @@ sed -i -e '1,$s/root:\*:/root:FBa41ZgngtSCI:/' $NAME/etc/shadow
 # Sometimes, the umount fails, reporting that /dev or others is in use.
 # But that's bully: there is another mount point to /dev (outside chroot), we can remove this one
 umount -f $NAME/proc
-umount -f $NAME/dev
+umount -f $NAME/dev || true
 umount -f $NAME/var/run/
 
 # initramfs
@@ -104,5 +106,5 @@ sed -i -e '1,$s|^1:2345:respawn:/sbin/getty 38400 tty1|1:2345:respawn:/sbin/ming
 
 
 
-mksquashfs $NAME basesystem.sqh
+mksquashfs -e $NAME/dev $NAME basesystem.sqh
 
