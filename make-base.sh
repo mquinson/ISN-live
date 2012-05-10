@@ -2,7 +2,7 @@
 NOM=clefISN
 DEBIAN=wheezy
 ARCH=i386
-NOYAU=linux-image-3.3.0-rc6-486
+NOYAU="linux-image-486" # let the system pick the most recent one
 USER=isn
 # Testing user ID
 uid=$(/usr/bin/id -u)
