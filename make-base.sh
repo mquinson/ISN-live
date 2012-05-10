@@ -43,10 +43,12 @@ chroot $NAME/ apt-get  install --yes wicd
 # root password is isnlive
 sed -i -e '1,$s/root:\*:/root:FBa41ZgngtSCI:/' $NAME/etc/shadow
 
-# let's unmount /dev, /var/run, /dev
-umount $NAME/proc
-umount $NAME/dev
-umount $NAME/var/run/
+# let's forcefully unmount /dev, /var/run, /dev
+# Sometimes, the umount fails, reporting that /dev or others is in use.
+# But that's bully: there is another mount point to /dev (outside chroot), we can remove this one
+umount -f $NAME/proc
+umount -f $NAME/dev
+umount -f $NAME/var/run/
 # initramfs
 echo "XXX install a kernel"
 cat > $NAME/etc/apt/sources.list <<EOF
