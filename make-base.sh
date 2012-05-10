@@ -17,43 +17,25 @@ set -ex
 if true ; then
 MIRROR="http://debian.mines.inpl-nancy.fr/debian/"
 
-INCLUDEPKG="--include=xorg,xfce4,desktop-base,arandr"
+INCLUDEPKG="--include=xorg,xfce4,desktop-base,arandr,wicd"
 
 echo "XXX download the elements"
 if [ -e debootstrap-${ARCH}.cache.tgz ] ; then
-  echo "archive already existing";
+  echo "Updating the archive that already exists";
+  debootstrap $INCLUDEPKG --arch $ARCH --unpack-tarball=`pwd`/debootstrap-${ARCH}.cache.tgz --make-tarball=debootstrap-${ARCH}.cache.tgz $DEBIAN $NAME $MIRROR
 else
-  debootstrap $INCLUDEPKG --arch $ARCH --make-tarball=debootstrap-${ARCH}.cache.tgz $DEBIAN $NAME $MIRROR
+  debootstrap $INCLUDEPKG --arch $ARCH                                                      --make-tarball=debootstrap-${ARCH}.cache.tgz $DEBIAN $NAME $MIRROR
 fi
 
 echo "XXX building the chroot"
-# We add wicd, but it seems that this induces some issues sometimes, to it's better to play safe for now, and install it later with a direct apt-get
-
 debootstrap $INCLUDEPKG --unpack-tarball=`pwd`/debootstrap-${ARCH}.cache.tgz --arch ${ARCH} $DEBIAN $NAME $MIRROR
-
-echo "XXX add backports to the apt sources"
-
-
-
-mount none -t proc $NAME/proc
-mount -o bind /dev $NAME/dev
-mount -o bind /var/run $NAME/var/run/
-chroot $NAME/ apt-get  install --yes wicd
-
-
 
 # root password is isnlive
 sed -i -e '1,$s/root:\*:/root:FBa41ZgngtSCI:/' $NAME/etc/shadow
 
-# let's forcefully unmount /dev, /var/run, /dev
-# Sometimes, the umount fails, reporting that /dev or others is in use.
-# But that's bully: there is another mount point to /dev (outside chroot), we can remove this one
-umount -f $NAME/proc
-umount -f $NAME/dev || true
-umount -f $NAME/var/run/
 
+echo "XXX add backports to the apt sources"
 # initramfs
-echo "XXX install a kernel"
 cat > $NAME/etc/apt/sources.list <<EOF
 deb http://ftp.fr.debian.org/debian/ experimental main contrib non-free
 
@@ -71,11 +53,14 @@ deb-src http://security.debian.org/ $DEBIAN/updates main
 deb http://backports.debian.org/debian-backports ${DEBIAN}-backports main
 
 EOF
+
+echo "XXX install our initramfs"
 chroot $NAME sh -c "apt-get update; apt-get  install  --yes  initramfs-tools"
 zcat initramfs-isn.tgz | (cd $NAME ; tar x)
+
+echo "XXX install a kernel"
 chroot $NAME sh -c "apt-get  install  --yes  $KERNEL"
 chroot $NAME sh -c "apt-get  install  --yes mingetty"
-# Begin of aufs
 fi
 
 
@@ -106,5 +91,5 @@ sed -i -e '1,$s|^1:2345:respawn:/sbin/getty 38400 tty1|1:2345:respawn:/sbin/ming
 
 
 
-mksquashfs -e $NAME/dev $NAME basesystem.sqh
+mksquashfs $NAME basesystem.sqh -e $NAME/proc -e $NAME/var/run -e $NAME/run -e $NAME/dev
 
