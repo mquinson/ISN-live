@@ -49,6 +49,7 @@ sed -i -e '1,$s/root:\*:/root:FBa41ZgngtSCI:/' $NAME/etc/shadow
 umount -f $NAME/proc
 umount -f $NAME/dev
 umount -f $NAME/var/run/
+
 # initramfs
 echo "XXX install a kernel"
 cat > $NAME/etc/apt/sources.list <<EOF
@@ -65,14 +66,14 @@ deb-src http://boisson.homeip.net/sources/ ./
 deb http://security.debian.org/ $DEBIAN/updates main
 deb-src http://security.debian.org/ $DEBIAN/updates main
 
-deb http://backports.debian.org/debian-backports ${DEBIAN}-backports main'
+deb http://backports.debian.org/debian-backports ${DEBIAN}-backports main
 
 EOF
 chroot $NAME sh -c "apt-get update; apt-get  install  --yes  initramfs-tools"
 zcat initramfs-isn.tgz | (cd $NAME ; tar x)
 chroot $NAME sh -c "apt-get  install  --yes  $KERNEL"
 chroot $NAME sh -c "apt-get  install  --yes mingetty"
-# debut de l'aufs
+# Begin of aufs
 fi
 
 
