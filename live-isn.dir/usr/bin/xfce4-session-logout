@@ -1,5 +1,6 @@
 #!/bin/sh
 NOM=/tmp/B_`date +"%s"` 
+export > /tmp/glop
 xmessage "Sauvegarde du repertoire en cours" -center -buttons "Patientez..."&
 if [ ! -f /oldroot/ramdisk/home/.clefcodage ] ; then
     cd /oldroot/ramdisk/home/${USER}

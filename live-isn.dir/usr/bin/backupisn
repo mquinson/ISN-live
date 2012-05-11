@@ -1,5 +1,5 @@
 #!/bin/sh
-USER=$(grep :1000: /etc/passwd | sed -e 's/:.*$//')
+USER=$(grep :1000: /etc/passwd | awk 'BEGIN {FS=":"} {print $1}')
 if [ ! -f /oldroot/ramdisk/home/.clefcodage ] ; then
     cd /oldroot/ramdisk/home/${USER}
     NOM=/tmp/B_`date +"%s"` 

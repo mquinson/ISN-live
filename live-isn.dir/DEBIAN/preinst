@@ -18,6 +18,8 @@ set -e
 case "$1" in
     install)
 	dpkg-divert --package live-isn --divert /usr/bin/xfce4-session-logout.real --rename /usr/bin/xfce4-session-logout
+	dpkg-divert --package live-isn --divert /usr/bin/mkdiskimage.old --rename /usr/bin/mkdiskimage
+	dpkg-divert --package live-isn --divert /usr/local/bin/xfce4-stop.sh.old --rename /usr/local/bin/xfce4-stop.sh
     ;;
 
     abort-upgrade)

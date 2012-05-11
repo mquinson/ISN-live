@@ -1,0 +1,41 @@
+Fait:
+- initramfs: Attention à prendre la version commitée, je me suis aperçu que j'avais oublié les modifs que j'avais faite (page de code et module aufs) ce qui m'a fait perdre 2 bonnes heures à refaire le débuggage)
+- une base boutable: Moche c'est vrai mais elle boute. 
+
+base et extension dpkg se charge sur
+
+http://www.normalesup.org/~boisson/basesystem
+http://www.normalesup.org/~boisson/extension_dpkg-ISN-1.0.sqh
+
+disponibles à partir de 2012-05-11-11:00:00
+
+À faire:
+
+*** Faire un beau bureau, celui ci est bati à partir de /etc/skel, actuellement c'est celui de clefagreg donc complètement hors contexte.
+
+
+**** Installer les logiciels sois forme d'extensions: Une extension se fait en mettant les fichier basesystem et extension_dpkg-ISN-1.0.sqh dans un répertoire et en écrivant
+
+# faitext.sh -b basesystem -n bluej -e java
+
+par exemple. Ici cela charge extension_java.sqh en plus; crée un répertoire
+bluej.dir et fait un chroot dans un enironnement correct.
+
+Si on appelle
+# faitext.sh -b basesystem -n bluej -e java -f
+
+à la sortie le fichier extension_java.sqh sera crée.
+
+Si on appelle
+# faitext.sh -b basesystem -n bluej -e java -f -d
+
+Il séparera en plus les rajouts de la base dpkg dans une extension à part.
+
+
+*** Mettre la partie spécifique à live-isn sous la forme d'une extension, ou bien créer des paquets à installer. Le pbm est que la modification de fichiers de configurations par un paquet n'est pas correcte. Une extension extension_environnement.sqh se plaquant sur une base debian pure me parait soudain une solution élégante.
+
+*** Faire une doc lisible (pas comme le truc pourri que j'ai fait pour clefagreg)
+
+*** Tester le clonage, j'ai récupéré les scripts de ClefAgreg mais ne les ai pas tester. C'est très simple et ne devrait pas poser de problèmes. Attention syslinux 3.71 est *indispensable*.
+
+*** Tester le bazar notamment wicd (instable sous testing), l'imprimante cups-pdf. Penser à mettre un mot de passe root simple.
