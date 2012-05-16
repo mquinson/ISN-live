@@ -1,8 +1,0 @@
-#!/bin/sh
-set -e
-if [ "$1" = "configure" ]; then
-	grep -v "#backup ISN" /etc/crontab > /tmp/crontab
-	echo '0,15,30,45 *	* * *	root	/usr/bin/backupisn > /dev/null 2>&1 #backup ISN' >> /tmp/crontab
-	mv /etc/crontab /etc/crontab.dpkg
-	mv /tmp/crontab /etc
-fi

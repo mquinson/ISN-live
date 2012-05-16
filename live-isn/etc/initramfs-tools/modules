@@ -1,0 +1,16 @@
+usb-storage 
+whci-hcd 
+xhci-hcd 
+ehci-hcd 
+ohci-hcd 
+uhci-hcd 
+atkbd 
+sg 
+unix
+squashfs
+usbhid
+loop
+vfat
+aufs
+nls_cp437
+nls_utf8

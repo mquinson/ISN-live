@@ -9,6 +9,8 @@ Utilisation: faiext.sh arguments
  -d : crée une extension séparée dpkg contenant la base dpkg de l'extension.
  -e extension: chargement de l'extension extension 
  -f : finalise l'extension en fabriquant le fichier .sqh à la fin
+ -F : Fusionne les extensions avec la base
+ -D : detruit le répertoire après finalisation de la base
  -h : usage de la commande
 EOF
 }
@@ -16,7 +18,7 @@ unset EDIT
 unset DODPKG
 LSTEXT=""
 FINALISE=""
-while getopts “hdb:fB:n:e:” OPTION
+while getopts “hdb:fFB:n:e:” OPTION
 do
      case $OPTION in
          h)
@@ -41,6 +43,12 @@ do
              ;;
 	 f)
 	     FINALISE=1
+	     ;;
+	 F)
+	     BIGFUSION=1
+	     ;;
+	 F)
+	     DESTROY=1
 	     ;;
          ?)
              usage
@@ -127,6 +135,19 @@ MONTESQH="mount -o loop -t squashfs "
     chroot $MONTAGE
     umount $MONTAGE/dev
     umount $MONTAGE/proc
+    if [ ! -z $BIGFUSION ] ; then
+	echo Fusion sur $BASE
+	[ ! -z "$(ls $MONTAGE/var/cache/apt/archives/*.deb)" ] && rm  $NOM.dir/var/cache/apt/archives/*.deb
+	mv $BASEFILE $BASEFILE.old
+	mv $NOMDPKGBASE $NOMDPKGBASE.old
+	mksquashfs $MONTAGE $BASEFILE -wildcards -noappend -e var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian*
+	ARCHIVE=$(tempfile)
+	rm $ARCHIVE
+	mkdir -p $ARCHIVE
+	(cd $MONTAGE ; tar c var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian* ) | (cd $ARCHIVE ; tar x)
+	mksquashfs $ARCHIVE extension_dpkg-$(cat $MONTAGE/FB).sqh  -noappend
+	rm -Rf $ARCHIVE
+    fi
     umount $MONTAGE
     ls $SUPPORT
     for f in $(ls $SUPPORT) ; do
@@ -138,6 +159,7 @@ MONTESQH="mount -o loop -t squashfs "
     umount $BASE
     rmdir $BASE $MONTAGE $DPKG
     [ -d $SUPPORT ] && rmdir $SUPPORT
+    [ ! -z $BIGFUSION ] && exit 0
     if [ ! -z $FINALISE ] ; then
 	echo Finalisation de $NOM
 	[ ! -z "$(ls $NOM.dir/var/cache/apt/archives/*.deb)" ] && rm  $NOM.dir/var/cache/apt/archives/*.deb
@@ -156,7 +178,7 @@ MONTESQH="mount -o loop -t squashfs "
 	else
 	    mksquashfs $NOM.dir extension_$NOM.sqh -noappend
 	fi
-    fi    
+    fi   
 else
 # edition de la base
     if [ -z $BASEFILE ] ; then
@@ -187,6 +209,7 @@ else
 	mkdir -p $ARCHIVE
 	(cd $BASEFILE.dir ; tar c var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian* ) | (cd $ARCHIVE ; tar x)
 	mksquashfs $ARCHIVE extension_dpkg-$(cat $BASEFILE.dir/FB).sqh  -noappend
-	rm -Rf $ARCHIVE $BASEFILE.dir
+	rm -Rf $ARCHIVE
+	[ ! -z $DESTROY ] && rm -Rf $BASEFILE.dir
     fi
 fi

@@ -1,0 +1,500 @@
+# live filesystem mounting			-*- shell-script -*-
+
+ISN_DIR=isn
+ISN_NAME=basesystem
+ISN_USER=user
+BASEROOT=/ISN
+MONTAGE=/cdrom
+RAMCDR=/sqh
+
+RAMSIZE=1000000
+
+LISTE_EXTENSIONS=extensions_${ISN_NAME}
+MARQUEUR=${ISN_DIR}/${ISN_NAME}
+# if BRUTAL then even unknown FS are tested (sometimes this morron don't seem to recognize vfats)
+BRUTAL=Yes
+DEBUG=No
+# 12 chiffres + un ^J dans la fin des extensions
+MAX_LONGUEUR=13
+
+
+pre_mountroot()
+{
+    log_begin_msg "Running /scripts/live-top"
+    run_scripts /scripts/live-top
+    log_end_msg
+    
+    
+    _log_msg "Searching for base system...\n"
+    
+    # Default delay is 10s
+    if [ -z "${LIVEDELAY}" ]; then
+	delay=10
+    else
+	delay=${LIVEDELAY}
+    fi    
+    /bin/sleep $delay
+    
+
+    # mount point
+    mkdir -p $MONTAGE
+    if grep -q -E "ramroot *= *true" /proc/cmdline ; then
+	[ $DEBUG = "Yes" ] && echo "Doing the dirtectory $RAMCDR"
+	mkdir -p $RAMCDR
+    fi
+    # Check the kind of boot mode chosen by the user
+    if grep -q -E "live *= *fast" /proc/cmdline ; then
+	BOOTMODE=FAST
+    else if grep -q -E "live *= *medium" /proc/cmdline ; then
+	BOOTMODE=MEDIUM
+    else
+	BOOTMODE=SLOW
+    fi; fi
+    _log_msg "BOOTMODE: $BOOTMODE\n"
+    
+    # We need to find our extension files. 
+    # (we look on every devices listed in /sys/block/*, but ram and
+    #  loop ones, searching for ${MARQUEUR} on it)
+    
+    LIST=""
+    for ATESTER in `ls /sys/block` ; do            
+        _log_msg "considering $ATESTER\n"
+	case "${ATESTER}" in 
+	    # nothing for these ones, proceed!
+	    loop*)
+		;;
+	    ram*)
+		;;
+	    fd*)
+		;;
+	    *)
+		take=0
+		case "$BOOTMODE" in
+		    FAST)
+			if `echo $ATESTER | grep -q -E "^sd*"` ; then
+  			    take=1
+			fi ;;
+		    MEDIUM)
+			if ((`echo $ATESTER | grep -v -q -E "^scd*"`) &&
+				(`echo $ATESTER | grep -v -q -E "^sr*"`) ) ; then
+  			    take=1
+			fi ;;
+		    SLOW)
+  			take=1
+		esac
+		if [ $take = 1 ] ; then
+  	            LIST="$LIST $ATESTER"
+		else
+		    _log_msg "Device $ATESTER ruled out because BOOTMODE is set to $BOOTMODE"
+		fi
+		unset take
+	esac
+    done
+    _log_msg "Liste des candidats: $LIST\n"
+    
+    # Load some more filesystems to help guessing the partition content
+    modprobe vfat fat ext2 
+
+    for ATESTER in $LIST ; do	    
+	FS_TYPE=$(get_fstype "/dev/${ATESTER}")
+	[ $DEBUG = "Yes" ] && echo "Testing $ATESTER (fs: $FS_TYPE)"
+
+	if [ "$FS_TYPE" = "unknown" ] ; then
+	    if [ $BRUTAL = "Yes" ] ; then
+		if [ $DEBUG = "Yes" ] ; then echo -n "$ATESTER"... ; fi
+		mount /dev/${ATESTER} $MONTAGE 2> /dev/null
+		if [ -f ${MONTAGE}/${MARQUEUR} ] ; then
+		    if [ $DEBUG = "Yes" ] ; then echo Found $ATESTER ; fi
+		    FOUNDROOT=/dev/${ATESTER}
+		    umount $MONTAGE
+		else 
+		    [ $DEBUG = "Yes" ] && echo "not found"
+		fi
+		umount $MONTAGE 2> /dev/null
+		if [ $DEBUG = "Yes" ] ; then echo "OK" ; fi
+	    fi
+	    for SOUSATESTER in `ls -d /sys/block/${ATESTER}/${ATESTER}* 2> /dev/null` ; do
+		SOUSPERIF=${SOUSATESTER#/sys/block/${ATESTER}/}
+		FS_TYPE=$(get_fstype "/dev/${SOUSPERIF}")
+		[ $DEBUG = "Yes" ] && echo -n "subdevice: ${SOUSPERIF} (fs: $FS_TYPE) "
+		if [ ! "$FS_TYPE" = "unknown" ] ; then
+		    modprobe $FS_TYPE 2> /dev/null
+		    if ! mount -t $FS_TYPE /dev/${SOUSPERIF} $MONTAGE 2> /tmp/err ; then
+			[ $DEBUG = "Yes" ] && echo "Failed to mount /dev/$SOUSPERIF: "`cat /tmp/err`
+		    fi
+		    
+		    if [ -f ${MONTAGE}/${MARQUEUR} ] ; then
+			[ $DEBUG = "Yes" ] && echo "Found the mark on $SOUSPERIF"
+			FOUNDROOT=/dev/${SOUSPERIF}
+			umount $MONTAGE
+			break
+		    else 
+			[ $DEBUG = "Yes" ] && echo "mark not found"
+		    fi
+		    umount $MONTAGE 2> /dev/null
+		else if [ $BRUTAL = "Yes" ] ; then
+		    [ $DEBUG = "Yes" ] && echo -n "$SOUSPERIF tested anyway... "
+		    mount /dev/${SOUSPERIF} $MONTAGE 2> /dev/null
+		    if [ -f ${MONTAGE}/${MARQUEUR} ] ; then
+			[ $DEBUG = "Yes" ] && echo "Found mark on $SOUSPERIF"
+			FOUNDROOT=/dev/${SOUSPERIF}
+			umount  $MONTAGE
+			break
+		    else
+			[ $DEBUG = "Yes" ] && echo "not found "
+		    fi
+		    umount $MONTAGE 2> /dev/null
+		fi
+	fi
+	    done
+	    else
+	    modprobe $FS_TYPE 2> /dev/null
+	    mount -t $FS_TYPE /dev/${ATESTER} $MONTAGE 2> /dev/null
+	    if [ -f ${MONTAGE}/${MARQUEUR} ] ; then
+		if [ $DEBUG = "Yes" ] ; then echo Found $ATESTER ; fi
+		FOUNDROOT=/dev/${ATESTER}
+		umount  $MONTAGE
+	    fi
+	    umount $MONTAGE 2> /dev/null
+	    fi
+	    log_end_msg
+	    if [ ! -z $FOUNDROOT ] ; then break ; fi
+    done
+    if [ -z $FOUNDROOT ] ; then
+	echo "Base system not found, dropping to a limited shell"
+	echo "Sorry and good luck..."
+	panic "File ${MARQUEUR} not found on block devices, dropping shell"
+    fi
+}
+
+# enchaine la dépendance des extensions, fonction récursive (Caml power)
+# avec TAB qui sert de pile et NOM qui sauvegarde les arguments successifs
+# sauf qu'il a fallu avoir recours à eval. Faire du récursif avec busybox, 
+# fallait oser!
+
+analyse_extension ()
+{
+    eval NOM_$2=$1
+#eval echo NOM_$2 = \$NOM_$2
+    if `tail -c $MAX_LONGUEUR $1 | grep -q -E "^[0-9 ]*$"` ; then
+	eval NOMB=\$NOM_$2
+# echo etude NOMB = $NOMB
+	LONGUEUR=`tail -c $MAX_LONGUEUR $NOMB`
+# echo -n $LONGUEUR
+	LONGUEUR=$(expr $LONGUEUR + 0)
+# echo donne $LONGUEUR
+	LONGUEUR_REELLE=`ls -l ${NOMB} | awk '{print $5}'`
+	LST=`tail -c $(expr $LONGUEUR_REELLE - $LONGUEUR) ${NOMB}`
+	for f in $LST ; do
+	    if `echo $f | grep -q extension_` ; then
+		NEXT=$(expr $2 + 1)
+# echo Next=$NEXT
+		eval unset TAB_$NEXT
+		analyse_extension ${MONTAGE}/${ISN_DIR}/$f $NEXT
+		eval TAB_$2=\"\$TAB_$2 \$TAB_$NEXT\"
+#		eval echo TAB_$2 donne \$TAB_$2
+	    fi
+	done
+    fi
+    eval TAB_$2=\"\$TAB_$2 \$NOM_$2\"
+#eval echo TAB_$2 = \$TAB_$2
+}
+
+# analyse une suite d'extensions en ne répétant pas le chargement d'extensions
+analyse_liste ()
+{
+    LISTE=""
+    while [ ! -z $1 ] ; do
+	analyse_extension $1 0
+	eval RES=\$TAB_0
+	for i in $RES ; do
+	    if `echo $LISTE | grep -v -q $i` ; then
+		LISTE=$LISTE" "$i
+	    fi
+	done
+	shift
+    done
+#echo $LISTE
+}
+
+mount_base()
+{
+    FSTYPE=$(get_fstype "$1")
+    if [ -z "$FSTYPE" ] || [ "$FSTYPE" = "unknown" ] ; then
+	if [ $DEBUG = "Yes" ] ; then echo mount $1 $MONTAGE ; fi
+	mount $1 $MONTAGE
+    else
+	if [ $DEBUG = "Yes" ] ; then echo mount -t $FSTYPE $1 $MONTAGE ; fi
+	mount -t $FSTYPE $1 $MONTAGE
+    fi
+# copie des fichiers de la clef en RAM
+    if grep -q -E "ramroot *= *true" /proc/cmdline ; then
+	echo "Copy all in RAM."
+	[ $DEBUG = "Yes" ] && echo "Copy on $RAMCDR"
+	cp -dpRf $MONTAGE/* $RAMCDR
+	umount $MONTAGE
+	rmdir $MONTAGE
+	mv $RAMCDR $MONTAGE
+#	exec /bin/sh
+    fi
+    if [ ! -b /dev/loop0 ] ; then
+	cd /dev
+	mknod loop0 b 7 0
+	cd /
+    fi
+    mkdir -p ${BASEROOT}
+    if [ $DEBUG = "Yes" ] ; then
+	echo mount ${MONTAGE}/${ISN_DIR}/${ISN_NAME} $BASEROOT -t squashfs -o loop
+    fi
+    modprobe squashfs
+    mount ${MONTAGE}/${ISN_DIR}/${ISN_NAME} $BASEROOT -t squashfs -o loop
+}
+
+mountroot()
+{
+    pre_mountroot
+
+    mount_base ${FOUNDROOT}
+# on test l'existence du répertoire /boot sur l'arborescence montée
+    if [ -d ${BASEROOT}/boot ] ; then
+# on enchaine sur le script de ClefAgreg    
+# Enable kernel messages
+	echo "6" > /proc/sys/kernel/printk
+	
+# Set paths
+	echo -n "Setting paths..."
+	PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/X11R6/bin:."
+	export PATH    
+	
+# on vide la table de hashage 
+	hash -r
+	
+	FOUNDMEM="$(awk '/MemTotal/{print $2}' /proc/meminfo)"
+	TOTALMEM="$(awk 'BEGIN{m=0};/MemFree|Cached/{m+=$2};END{print m}' /proc/meminfo)"
+	
+# FOUNDMEM = taille RAM totale, TOTALMEM = taille RAM disponible
+	
+# Minimum size of additional ram partitions (vient de Knoppix)
+	MINSIZE=2000
+# At least this much memory minus 30% should remain when home and var are full.
+	MINLEFT=16000
+# Maximum ramdisk size
+	MAXSIZE="$(expr $TOTALMEM - $MINLEFT)"
+# Default ramdisk size for ramdisk
+	RAMSIZE="$(expr $TOTALMEM / 5)"
+	RAMSIZE=$(expr $RAMSIZE \* 4)
+	mkdir -p /ramdisk
+# tmpfs/varsize version, can use swap
+	echo -n "Creating /ramdisk dynamic size=${RAMSIZE}k on shared memory..."
+	mount -t tmpfs -o "size=${RAMSIZE}k" /ramdisk /ramdisk
+	echo "Done."
+
+	mkdir -p /ramdisk/home/${ISN_USER}
+	mkdir -p /ramdisk/var/run
+	mkdir -p /ramdisk/etc
+	mkdir -p /ramdisk/dev
+# test
+
+# incomplet, on oublie une partie des modifications avec les extensions
+	
+# Create empty utmp and wtmp
+	:> /ramdisk/var/run/utmp
+	:> /ramdisk/var/run/wtmp
+
+# on recopie la ligne de commande
+	echo $CMDLINE > /ramdisk/etc/cmdlineboot
+	touch /ramdisk/etc/resolv.conf
+	
+# Extremely important, init crashes on shutdown if this is only a link
+
+	df
+	echo "...RAMDISK fini."
+
+# ne fonctionne pas 
+#    mount -n -o move /dev /ramdisk/dev
+#    if [ ! -d /dev ] ; then
+#	ln -s /ramdisk/dev /dev
+#    fi
+# Mis en place du modprobe au cas où
+# bon le unionfs
+
+	echo "/sbin/modprobe" > /proc/sys/kernel/modprobe
+	
+	
+	echo "Initialisation du système"
+	mkdir -p ${rootmnt}
+	cd /
+	mount -t aufs aufs ${rootmnt} -o dirs=/ramdisk=rw:/${BASEROOT}=ro
+	
+# le pivot root ne marche pas ici scrogneugneu, usage de run-init
+	
+	mkdir ${rootmnt}/oldroot
+	cd ${rootmnt}
+	
+# recherche d'une extension
+#
+# Prise en compte de la fin de l'extension pour hierarchiser
+# le chargement des extensions. Bon, dans un premier temps pas urgent
+# chargement donné soit par un fichier ordre_extensions, soit par
+# date du plus vieux au plus récent.
+#
+	RAJOUT=""
+	INDICE=1
+	if [ -f ${MONTAGE}/ordre_extensions ] ; then
+	    LISTE_EXT=$(cat ${MONTAGE}/ordre_extensions | sed -e 's|^|'${MONTAGE}/${ISN_DIR}'/|')
+	else
+	    LISTE_EXT=`ls -tr ${MONTAGE}/${ISN_DIR}/extension*.sqh`
+	fi
+	analyse_liste $LISTE_EXT
+	LISTE_EXT=$LISTE
+	for fichier in $LISTE_EXT ; do
+	    if [ ! -b /dev/loop$INDICE ] ; then
+		cd /dev
+		mknod loop$INDICE b 7 $INDICE
+		cd ${rootmnt}
+	    fi
+	    INDICE=`expr $INDICE + 1`
+	    DIR=`echo $fichier | sed -e 's/^.*\(extension.*\).sqh/\1/'`
+	    echo Installation de $DIR
+	    mkdir -p /$DIR
+	    mount $fichier /$DIR -t squashfs -o loop
+	    RAJOUT=:/$DIR=ro+wh$RAJOUT
+	done
+	
+# recherche extension externe
+# À voir dans un deuxième temps
+#    mkdir -p /extensions
+#    if /bin/trouvefichier UIS /extensions $LISTE_EXTENSIONS ; then
+#	for fichier in `cat /extensions/$LISTE_EXTENSIONS` ; do
+##while [ -f ${MONTAGE}/${ISN_DIR}/extension$NUMERO.sqh ] ; do
+#	    if [ ! -b /dev/loop$INDICE ] ; then
+#		cd /dev
+#		mknod loop$INDICE b 7 $INDICE
+#		cd ${rootmnt}
+#	    fi
+#	    INDICE=`expr $INDICE + 1`
+#	    DIR=`echo $fichier | sed -e 's/^.*\(extension.*\).sqh/\1/'`
+#	    echo Installation de $DIR
+#	    mkdir -p /$DIR
+#	    mount /extensions/$ISN_DIR/$fichier /$DIR -t squashfs -o loop
+#	    RAJOUT=:/$DIR=ro+wh$RAJOUT
+#	done
+#    fi
+#  Essai pour le /dev
+#    umount /dev/pts
+#    mv /dev /ramdisk
+#    ln -s /ramdisk/dev /dev
+	echo Assemblage des repertoires
+	mount -t aufs aufs ${rootmnt} -o dirs=/ramdisk=rw$RAJOUT:/${BASEROOT}=ro
+	if [ ! -d ${rootmnt}/oldroot ] ; then
+	    mkdir ${rootmnt}/oldroot
+	fi
+	if [ ! -d ${rootmnt}/proc ] ; then 
+	    mkdir ${rootmnt}/proc
+	fi
+	if [ ! -d ${rootmnt}/sys ] ; then
+	    mkdir ${rootmnt}/sys
+	fi
+	echo Fabrication de /home/${ISN_USER}
+
+# mis à jour de /home/${ISN_USER}
+# (cd ${rootmnt}/etc/skel ; tar c .) | (cd /ramdisk/home/${ISN_USER} ; tar x)
+
+	if [ -f ${MONTAGE}/home.tar.bfe ] ; then
+
+# cas d'un cryptage
+
+	    PASSWD=`cat /proc/cmdline | grep clefcodage | sed -e 's/^.*clefcodage="\(.*\)".*$/\1/'`
+	    if [ ! -z $PASSWD ] ; then 
+		echo $PASSWD > /ramdisk/home/.clefcodage
+	    fi
+	    if [ -f ${MONTAGE}/clavier.kmap.gz ] ; then
+		loadkeys ${MONTAGE}/clavier.kmap.gz
+	    fi
+	    cd /ramdisk/home
+	    cp ${MONTAGE}/home.tar.bfe .
+	    bcrypt home.tar.bfe
+	    tar xf home.tar
+	    rm home.tar
+	    mkdir -p /ramdisk/home/${ISN_USER}/public
+	    cd ${MONTAGE}/home
+	    cp -a . /ramdisk/home/${ISN_USER}/public
+	    cd  /ramdisk/home/${ISN_USER}/public
+	    if [ -f ${MONTAGE}/droitshome.txt ] ; then
+		cp ${MONTAGE}/droitshome.txt /tmp
+		chmod +x /tmp/droitshome.txt
+		/tmp/droitshome.txt
+		rm /tmp/droitshome.txt
+	    fi
+	    if [ -f ${MONTAGE}/liens.cpio ] ; then
+		cpio -i < ${MONTAGE}/liens.cpio
+	    fi
+	else
+
+# cas normal
+
+	    cd  /ramdisk/home/${ISN_USER}
+	    if [ ! -f ${MONTAGE}/home/.perso ] ; then
+		cp -a ${rootmnt}/etc/skel/. .
+	    fi
+# (cd ${MONTAGE}/home ; tar c .) | (cd /ramdisk/home/${ISN_USER} ; tar x)
+	    cd ${MONTAGE}/home
+	    cp -a . /ramdisk/home/${ISN_USER}
+	    cd  /ramdisk/home/${ISN_USER}
+	    if [ -f ${MONTAGE}/droitshome.txt ] ; then
+		cp ${MONTAGE}/droitshome.txt /tmp
+		chmod +x /tmp/droitshome.txt
+		/tmp/droitshome.txt
+		rm /tmp/droitshome.txt
+	    fi
+	    if [ -f ${MONTAGE}/liens.cpio ] ; then
+		cpio -i < ${MONTAGE}/liens.cpio
+	    fi
+	fi
+	cd /
+#chroot ${rootmnt} chmod -R +w /home/${ISN_USER}
+#chroot ${rootmnt} chown -R live /home/${ISN_USER}/
+	chmod -R +w /ramdisk/home/${ISN_USER}
+	chown -R 1000.1000 /ramdisk/home/${ISN_USER}/
+# on conserve des liens vers les systèmes de fichiers séparés
+# fait par init
+#    chroot ${rootmnt} mount /proc
+#    chroot ${rootmnt} mount /sys
+	mkdir -p ${rootmnt}/oldroot/ramdisk
+	mount -o bind /ramdisk ${rootmnt}/oldroot/ramdisk
+    if grep -q -E "ramroot *= *true" /proc/cmdline ; then
+	mv ${MONTAGE}  ${rootmnt}/oldroot
+    else
+	mkdir -p ${rootmnt}/oldroot${MONTAGE}
+	mount -o bind ${MONTAGE} ${rootmnt}/oldroot${MONTAGE}
+    fi
+	for dir in `ls -d /extension*` ; do
+	    if [ -d /$dir ] ; then
+		mkdir -p ${rootmnt}/oldroot/$dir
+		mount -o bind /$dir ${rootmnt}/oldroot/$dir
+	    fi
+	done
+	if [ ! -f ${rootmnt}/etc/init ] ; then
+	    ln -s -f /sbin/init ${rootmnt}/etc/init
+	fi
+# inutile d'après init
+#    umount /proc/bus/usb
+#    umount /proc
+#    umount /sys
+	echo RAMDISK fini, boot normal.
+	echo Running init
+	cd /
+    else
+	echo "Aie, big panic, cannot find a valid root filesystem.."
+	echo "Here is a shell, enjoy!"
+	PS1="${ISN_USER}# "
+	export PS1
+	echo "6" > /proc/sys/kernel/printk
+# Allow signals
+	trap 1 2 3 15
+	exec /bin/sh
+    fi
+    [ "$quiet" != "y" ] && log_begin_msg "Running /scripts/live-bottom"
+    run_scripts /scripts/live-bottom
+    [ "$quiet" != "y" ] && log_end_msg
+}

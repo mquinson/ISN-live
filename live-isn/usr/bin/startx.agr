@@ -1,0 +1,169 @@
+#!/bin/sh
+
+# $Xorg: startx.cpp,v 1.3 2000/08/17 19:54:29 cpqbld Exp $
+#
+# This is just a sample implementation of a slightly less primitive
+# interface than xinit.  It looks for user .xinitrc and .xserverrc
+# files, then system xinitrc and xserverrc files, else lets xinit choose
+# its default.  The system xinitrc should probably do things like check
+# for .Xresources files and merge them in, startup up a window manager,
+# and pop a clock and serveral xterms.
+#
+# Site administrators are STRONGLY urged to write nicer versions.
+#
+# $XFree86: xc/programs/xinit/startx.cpp,v 3.12.2.2 2002/01/28 18:27:34 tsi Exp $
+export PATH=/usr/X11R6/bin:/usr/local/bin:/bin:/usr/bin:/sbin:/usr/local/sbin:/usr/bin/X11
+export HOME=/home/${USER}
+export USER=${USER}
+export CLAVIER=""
+export LAYOUT=""
+export SERVEUR=""
+export MOUSE="/dev/input/mice"
+sudo /usr/bin/anacmdline
+XSETUP_CONF=/home/${USER}/.xserverrc
+
+if [ -f /etc/preferences ] ; then
+    . /etc/preferences
+fi
+if [ -f /home/${USER}/preferences ] ; then
+    . /home/${USER}/preferences
+fi
+if [ $MOUSE  = "usb" ] ; then
+    MOUSE="/dev/input/mice"
+elif [ $MOUSE  = "ps2" ] ; then
+    MOUSE="/dev/psaux"
+fi
+if [ ! -z $CLAVIER ] ; then
+    sudo loadkeys $CLAVIER
+else
+    sudo loadkeys fr-pc
+fi
+
+if [ -f /var/tmp/Xvesa ] ; then
+    sudo rm -f /var/tmp/Xvesa
+fi
+
+if grep -q graphesafe /etc/cmdlineboot || [ $SERVEUR = "fbdev" ] || [ $SERVEUR = "vesa" ] ||  [ ! -z $GRAPHESAFE ] ; then
+    XFILE=/home/${USER}/.xserverrc
+    cd /home/${USER}/
+    
+    if [ -x $XFILE ] ; then
+	
+	echo -e   "\033[1mOn va utiliser les reglages precedents."
+	echo  -e "Si vous voulez les modifier, faites 'sudo xsetup-soft.sh'."
+	echo -e "\033[0m "
+	
+	sleep 2;
+    elif [ $SERVEUR = "vesa" ] ; then
+	if [ -z $MODE ] ; then
+	    MODE="1024x768"
+	fi
+	if [ -z $COULEUR ] ; then
+	    COULEUR=16
+	fi
+	echo "#!/bin/sh" > $XSETUP_CONF
+	echo "exec /usr/bin/X11/Xvesa -mouse $MOUSE,5 -screen "$MODE"x$COULEUR -shadow -logo -p 1 -I &>/dev/null" >> $XSETUP_CONF
+	chmod +x $XSETUP_CONF
+    elif [ $SERVEUR = "fbdev" ] ; then
+	if [ -z $MODE ] ; then
+	    MODE="1024x768"
+	fi
+	if [ -z $COULEUR ] ; then
+	    COULEUR=16
+	fi
+	echo "#!/bin/sh" > $XSETUP_CONF
+	echo "exec /usr/bin/X11/Xfbdev -mouse $MOUSE,5 -logo -p 1 -I &>/dev/null" >> $XSETUP_CONF
+	chmod +x $XSETUP_CONF
+
+	
+    else
+	
+	/usr/bin/xsetup-soft.sh
+
+    fi
+    touch /var/tmp/Xvesa
+fi
+
+
+cd /home/${USER}/
+
+
+if [ x"$XAUTHORITY" = x ]; then
+    XAUTHORITY=$HOME/.Xauthority
+    export XAUTHORITY
+fi
+
+case `uname` in
+Linux*)
+	if [ -z "`hostname --version | grep GNU`" ]; then
+		hostname=`hostname -f`
+	else
+		hostname=`hostname`
+	fi
+	;;
+*)
+	hostname=`hostname`
+	;;
+esac
+
+authdisplay=${display:-:0}
+mcookie=`mcookie`
+for displayname in $authdisplay $hostname$authdisplay; do
+    if ! xauth list "$displayname" | grep "$displayname " >/dev/null 2>&1; then
+	xauth add $displayname . $mcookie
+	removelist="$displayname $removelist"
+    fi
+done
+if [ ! -f /var/tmp/Xvesa ] ; then
+    if [ -f /etc/X11/xorg.conf ] ; then
+	sudo rm -f /etc/X11/xorg.conf
+    fi
+    if [ -f /home/${USER}/preferences ] ; then
+	. /home/${USER}/preferences
+	if [ ! -z $MODE ] ; then
+	    sudo Xorg -configure
+#	    cat /root/xorg.conf.new | sed -e '1,$s/\(Depth[ 0-9]*\)$/\1\nModes "'$MODE'"/g' | sed -e '1,$s|/dev/mouse|/dev/input/mice|g' > /tmp/xorg.conf
+	    sudo mv  /root/xorg.conf.new /tmp
+	    sudo faitxorg /tmp/xorg.conf.new $MODE
+	    sudo mv /tmp/xorg.conf /etc/X11
+	    rm -f xorg.conf.new
+	fi
+    else
+	if [ -f /etc/preferences ] ; then
+	    . /etc/preferences
+	    if [ ! -z $MODE ] ; then
+		sudo Xorg -configure
+#		cat /root/xorg.conf.new | sed -e '1,$s/\(Depth[ 0-9]*\)$/\1\nModes "'$MODE'"/g' | sed -e '1,$s|/dev/mouse|/dev/input/mice|g' > /tmp/xorg.conf
+		sudo mv  /root/xorg.conf.new /tmp
+		sudo faitxorg /tmp/xorg.conf.new $MODE
+		sudo mv /tmp/xorg.conf /etc/X11
+		rm -f xorg.conf.new
+	    fi
+	fi
+    fi
+    su -c "xinit /home/${USER}/.xinitrc" - ${USER}
+#xinit /home/${USER}/.xinitrc -- /home/${USER}/.xserverrc
+else
+    su -c "xinit /home/${USER}/.xinitrc -- /home/${USER}/.xserverrc" - ${USER}
+fi
+
+if [ x"$removelist" != x ]; then
+    xauth remove $removelist
+fi
+
+
+
+
+
+if command -v deallocvt > /dev/null 2>&1; then
+    deallocvt
+fi
+
+
+
+
+
+
+
+
+
