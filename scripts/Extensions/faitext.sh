@@ -127,7 +127,7 @@ MONTESQH="mount -o loop -t squashfs "
 	EXT=$(basename $ext | sed -e 's/.sqh//')
 	mkdir -p $SUPPORT/$EXT
 	$MONTESQH $ext $SUPPORT/$EXT
-	CHAINE=":$SUPPORT/$EXT=ro:$CHAINE"
+	CHAINE=":$SUPPORT/$EXT=ro$CHAINE"
     done    
     mount -t aufs aufs $MONTAGE -o dirs=$NOM.dir=rw$CHAINE 
     mount -t proc proc $MONTAGE/proc
