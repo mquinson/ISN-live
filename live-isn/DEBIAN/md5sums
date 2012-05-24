@@ -1,4 +1,4 @@
-ceb475b3fce4b101d6c9a7b5e0282ed2  usr/bin/mkdiskimage
+5d793dab6cfcc9aac107c52df681f476  usr/bin/mkdiskimage
 4d95eab1be753187ea89d3679b38e991  usr/bin/backupisn
 8ef128989f7f3b4e419034ccde5fc8c0  usr/bin/xfce4-session-logout
 74b8f166aa3a60de013e5b6837e41dd6  usr/bin/startx.agr
@@ -7,7 +7,7 @@ e6314090b494d609f82460f2e5fff4c3  usr/bin/anacmdline
 5af3e96d59e3b9ce9c146159ff301035  usr/local/bin/xfce4-stop.sh
 20e6cb63c295975e637c6b9a069a5178  usr/local/bin/FaitUSB
 2bb6c6501cd777c02bc6601a75b955b2  usr/local/bin/faitxorg
-0cba125a112960ed6a2ce0dafac68322  usr/local/bin/FaitUSB.root
+0dab46d1729231ba5a728f74d87e35dd  usr/local/bin/FaitUSB.root
 66441a94e009551baac355229d42237c  usr/local/bin/arret
 e96023b547c5b7724eb9f99c72ad5543  usr/local/bin/get-edid
 6b784e499bd70587d8a6bc62620f3d6d  usr/local/bin/parse-edid
@@ -71,7 +71,6 @@ e1d992ff3298c267ab40778c137fa5a0  etc/initramfs-tools/initramfs.conf
 f2627992409c6eeebcdf87949ce7a1d0  etc/initramfs-tools/modules
 67b0721f9102ae7e0ed66d0eb7a43f86  etc/initramfs-tools/hooks/live-keymap
 4794bf2d6ce9d27a46dc73525e918f6a  etc/initramfs-tools/scripts/live
-9e769813b7bf32026f1c48585cc8ed18  etc/initramfs-tools/scripts/live~
 d9abb5f429e0b8f2ff5886fbee1fc083  etc/rc.local
 355593b6c636f738ee701b6ae5f3a2a5  etc/scripts.d/modules.sh
 3c4a2229f50458de8c6fc0c9a9cc6a80  etc/clavier.kmap.gz

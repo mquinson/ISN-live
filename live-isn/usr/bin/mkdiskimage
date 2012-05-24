@@ -218,16 +218,16 @@ $totalsize = $c*$h*$s;
 $tracks    = $c*$h;
 
 # If -s is given, try to simply use truncate...
-unless ($opt{'s'} && truncate(OUTPUT, $totalsize)) {
-    $track = "\0" x (512*$s);
-
-    # Print fractional track
-    print OUTPUT "\0" x (512 * ($s-1));
-
-    for ( $i = 1 ; $i < $tracks ; $i++ ) {
-	print OUTPUT $track;
-    }
-}
+#unless ($opt{'s'} && truncate(OUTPUT, $totalsize)) {
+#    $track = "\0" x (512*$s);
+#
+#    # Print fractional track
+#    print OUTPUT "\0" x (512 * ($s-1));
+#
+#    for ( $i = 1 ; $i < $tracks ; $i++ ) {
+#	print OUTPUT $track;
+#    }
+#}
 
 # Print mtools temp file
 $n = 0;

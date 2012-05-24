@@ -16,5 +16,5 @@ fi
 if [ ! -f isolinux/initrd.img ] ; then 
 cp initrd.img isolinux
 fi
-mkisofs -v -l -ldots -A "Clef ISN" -P "ISN" -p "F.Boisson" -V "ISN" -c boot.cat -b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -boot-info-table -o /tmp/BootCD.iso .
+genisoimage -v -J -l -ldots -A "Clef ISN" -P "ISN" -p "F.Boisson" -V "ISN" -c boot.cat -b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -boot-info-table -o /tmp/BootCD.iso .
 ls -l /tmp/BootCD*

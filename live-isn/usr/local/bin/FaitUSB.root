@@ -32,10 +32,11 @@ commande () {
 Cette fenêtre disparaitra lorsque la commande sera finie.
 EOF
 	xmessage -center  -file /tmp/USB_message -buttons "Attendez..." &
+	PIDX=$!
     fi
     $FAKE $1
     if [ ! -z "$3" ] ; then
-	killall xmessage > /dev/null 2> /dev/null 
+	kill $PIDX > /dev/null 2> /dev/null 
     fi
 }
 
@@ -56,9 +57,13 @@ CLEF_CHOISIE=`xmessage -center -print -file /tmp/USB_message -buttons $BOUTON`
 if [ $CLEF_CHOISIE = "Stop" ] ; then
     exit 1
 fi
+killall Thunar
+PID=""
 for part in `ls /media | grep $CLEF_CHOISIE` ; do
-    su ${USER} -c "mount /media/$part"
-    su ${USER} -c "Thunar /media/$part &" 
+    mkdir -p /media/$part
+    mount /dev/$part /media/$part
+    Thunar /media/$part &
+    PID="$! "$PID
 done
 sleep 2
 cat > /tmp/USB_message <<EOF
@@ -68,9 +73,9 @@ EOF
 CHOIX=`xmessage -center -print -file /tmp/USB_message -buttons "Stop,Continue" `
 if [ $CHOIX = "Stop" ] ; then
     for part in `ls /media | grep $CLEF_CHOISIE` ; do
-	su ${USER} -c "umount /media/$part"
+	umount /media/$part
     done
-    killall Thunar
+    kill $PID
     exit 1
 fi
 taille $CLEF_CHOISIE
@@ -80,7 +85,7 @@ elif [ $TAILLE -le 3000 ] ; then
     ARG=" 0 128 32"
 else ARG=" 0 255 63"
 fi
-killall Thunar
+kill $PID
 mount | grep /dev/$CLEF_CHOISIE | awk '{print "umount "$1}' | sh
 CMD="mkdiskimage /dev/"$CLEF_CHOISIE$ARG
 commande "mkdiskimage /dev/$CLEF_CHOISIE$ARG"  "Formattage bas niveau de la clef USB, attention c'est irréversible." "Formattage bas niveau en cours..."
@@ -113,16 +118,17 @@ Recopie des fichiers sur la clef,prévoir quelques minutes,
 il y a tout de même plus de 500M à copier.
 EOF
 xmessage -center -file /tmp/USB_message -buttons "Attendez..." &
+PIDX=$!
 cd /oldroot/cdrom
 cp -a * /media/$PARTITION
 chmod -R +w /media/$PARTITION
 cd /media/$PARTITION
-if [ -f isolinux/linux26 ] ; then
-    mv isolinux/linux26 .
-    mv isolinux/minirt26.gz .
+if [ -f isolinux/linuxlive ] ; then
+    mv isolinux/linuxlive .
+    mv isolinux/initrd.img .
 fi
 cd 
-killall xmessage > /dev/null 2>&1
+kill $PIDX > /dev/null 2>&1
 umount /media/$PARTITION
 syslinux /dev/$PARTITION
 cat > /tmp/USB_message <<EOF
