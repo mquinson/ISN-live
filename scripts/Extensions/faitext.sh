@@ -47,7 +47,7 @@ do
 	 F)
 	     BIGFUSION=1
 	     ;;
-	 F)
+	 D)
 	     DESTROY=1
 	     ;;
          ?)
