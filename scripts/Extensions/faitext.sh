@@ -93,6 +93,7 @@ MONTESQH="mount -o loop -t squashfs "
 	    umount $MONTAGE/proc
 	    umount $MONTAGE
 	    for f in $(ls $SUPPORT) ; do
+		sleep 0.1
 		umount $SUPPORT/$f
 	    done
 	    umount $BASE
@@ -154,7 +155,8 @@ MONTESQH="mount -o loop -t squashfs "
 	echo $f
 	umount $SUPPORT/$f
     done
-    [ -d $SUPPORT/* ] && rmdir $SUPPORT/*
+    for i in $(ls $SUPPORT) ; do rmdir $SUPPORT/$i ;done
+#    [ -d $SUPPORT/* ] && rmdir $SUPPORT/*
     umount $DPKG
     umount $BASE
     rmdir $BASE $MONTAGE $DPKG
