@@ -1,9 +1,9 @@
 # live filesystem mounting			-*- shell-script -*-
 
-ISN_DIR=agreg
-ISN_NAME=agreg
-ISN_USER=agreg
-BASEROOT=/AGREG
+ISN_DIR=isn
+ISN_NAME=basesystem
+ISN_USER=user
+BASEROOT=/ISN
 MONTAGE=/cdrom
 RAMCDR=/sqh
 
@@ -191,6 +191,7 @@ analyse_extension ()
 # echo Next=$NEXT
 		eval unset TAB_$NEXT
 		analyse_extension ${MONTAGE}/${ISN_DIR}/$f $NEXT
+		NEXT=$(expr $2 + 1)
 		eval TAB_$2=\"\$TAB_$2 \$TAB_$NEXT\"
 #		eval echo TAB_$2 donne \$TAB_$2
 	    fi

@@ -13,13 +13,14 @@ if `tail -c $MAX_LONGUEUR $1 | grep -q -E "^[0-9 ]*$"` ; then
     LONGUEUR=`tail -c $MAX_LONGUEUR $NOMB`
     LONGUEUR=`expr $LONGUEUR + 0`
     LONGUEUR_REELLE=`ls -l ${NOMB} | awk '{print $5}'`
-    LST=`tail -c $[$LONGUEUR_REELLE - $LONGUEUR] ${NOMB}`
+    LST=`tail -c $(expr $LONGUEUR_REELLE - $LONGUEUR) ${NOMB}`
         for f in $LST ; do
 	    if `echo $f | grep -q extension_` ; then
-		NEXT=$[$2 + 1]
+		NEXT=$(expr $2 + 1)
 #		echo Next=$NEXT
 		eval unset TAB_$NEXT
 		analyse_extension $f $NEXT
+		NEXT=$(expr $2 + 1)
 		eval TAB_$2=\"\$TAB_$2 \$TAB_$NEXT\"
 #		eval echo TAB_$2 donne \$TAB_$2
 	    fi

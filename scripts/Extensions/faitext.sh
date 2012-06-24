@@ -251,7 +251,13 @@ MONTESQH="mount -o loop -t squashfs "
 	    mkdir -p $ARCHIVE
 	    (cd $NOM.dir ; tar c var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian* ) | (cd $ARCHIVE ; tar x)
 	    mksquashfs $ARCHIVE extension_dpkg_$NOM.sqh  -noappend
-	    doextension.sh extension_dpkg_$NOM.sqh extension_$NOM.sqh 
+	    LSTEXTP=extension_$NOM.sqh
+	    for i in $LSTEXT ; do
+		if [ ! -z "$(echo $i | grep extension_dpkg | grep -v extension_dpkg_$NOM.sqh)" ] ; then
+		    LSTEXTP=$LSTEXTP" "$i
+		fi
+	    done
+	    doextension.sh extension_dpkg_$NOM.sqh $LSTEXTP
 	    rm -Rf $ARCHIVE
 	else
 	    mksquashfs $NOM.dir extension_$NOM.sqh -noappend
