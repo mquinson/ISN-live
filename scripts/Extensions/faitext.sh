@@ -61,6 +61,15 @@ done
 echo $LISTE
 }
 
+complete ()
+{
+    TEST=1$1
+    if [ $TEST -lt 1000000000000 ] ; then
+	complete "0$1"
+    else
+	RESULTAT=$1
+    fi
+}
 
 unset EDIT
 unset DODPKG
@@ -104,15 +113,17 @@ do
              ;;
      esac
 done
-# echo $LSTEXTORG
 
+LSTEXT=
 if [ ! -z "$LSTEXTORG" ] ; then
     for PAQ in $(analyse_liste $LSTEXTORG) ; do
-	LSTEXT="$PAQ $LSTEXT"
+	if [ -z "$(echo $LSTEXT | grep $PAQ)" ] ; then
+	    LSTEXT="$PAQ $LSTEXT"
+	fi
     done
 fi
 
-# echo $LSTEXT
+
 
 if [ -z $EDIT ] ; then
 MONTAGE=/var/$(tempfile)
@@ -226,8 +237,14 @@ MONTESQH="mount -o loop -t squashfs "
 	[ ! -z "$(ls $NOM.dir/var/cache/apt/archives/*.deb)" ] && rm  $NOM.dir/var/cache/apt/archives/*.deb
 	if [ ! -z $DODPKG ] ; then
 	    mksquashfs $NOM.dir extension_$NOM.sqh -wildcards -noappend -e var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian*
-	    if [ ! -z $LSTEXT ] ; then
-		doextension.sh extension_$NOM.sqh $LSTEXT
+	    LSTEXTP=
+	    for i in $LSTEXT ; do
+		if [ ! -z "$(echo $i | grep -v extension_dpkg | grep -v extension_$NOM.sqh)" ] ; then
+		    LSTEXTP=$LSTEXTP" "$i
+		fi
+	    done
+	    if [ ! -z "$LSTEXTP" ] ; then
+		doextension.sh extension_$NOM.sqh $LSTEXTP
 	    fi
 	    ARCHIVE=$(tempfile)
 	    rm $ARCHIVE
@@ -238,6 +255,15 @@ MONTESQH="mount -o loop -t squashfs "
 	    rm -Rf $ARCHIVE
 	else
 	    mksquashfs $NOM.dir extension_$NOM.sqh -noappend
+	    LSTEXTP=
+	    for i in $LSTEXT ; do
+		if [ ! -z "$(echo $i | grep -v extension_dpkg | grep -v extension_$NOM.sqh)" ] ; then
+		    LSTEXTP=$LSTEXTP" "$i
+		fi
+	    done
+	    if [ ! -z "$LSTEXTP" ] ; then
+		doextension.sh extension_$NOM.sqh $LSTEXTP
+	    fi
 	fi
     fi   
 else
