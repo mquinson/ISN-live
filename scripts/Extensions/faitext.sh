@@ -118,7 +118,7 @@ LSTEXT=
 if [ ! -z "$LSTEXTORG" ] ; then
     for PAQ in $(analyse_liste $LSTEXTORG) ; do
 	if [ -z "$(echo $LSTEXT | grep $PAQ)" ] ; then
-	    LSTEXT="$PAQ $LSTEXT"
+	    LSTEXT="$LSTEXT $PAQ"
 	fi
     done
 fi
