@@ -226,7 +226,7 @@ mount_base()
 	mount $1 $MONTAGE
     else
 	if [ $DEBUG = "Yes" ] ; then echo mount -t $FSTYPE $1 $MONTAGE ; fi
-	mount -t $FSTYPE $1 $MONTAGE
+	mount -t $FSTYPE $1 $MONTAGE -o rw,uid=1000,gid=1000
     fi
 # copie des fichiers de la clef en RAM
     if grep -q -E "ramroot *= *true" /proc/cmdline ; then
