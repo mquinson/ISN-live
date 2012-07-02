@@ -1,0 +1,338 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+	"http://www.w3.org/TR/html4/loose.dtd">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE>Présentation de la clefISN</TITLE>
+	<META NAME="AUTHOR" CONTENT="Abdellatif Kbida, Jean-Claude Meilland">
+	<link rel="stylesheet" type="text/css" href="styles.css">
+</HEAD>
+<BODY LANG="fr-FR" TEXT="#000000" DIR="LTR">
+<div>
+	<h1 class="titre">Présentation de la ClefISN</h1>
+	<center>  <img src="/oldroot/cdrom/splash.png" align=center WIDTH=160 HEIGHT=120 BORDER=0></center>
+</div>
+<div id="sommaire">
+<h2>Table des matières</h2>
+<ul>
+	<li>1. <a href="#presentationclefISN">Présentation de la ClefISN</a></li>
+	<li><ul>
+		<li>1.1 <a href="#liveusb">Live USB</a></li>
+		<li>1.2 <a href="#presentationxfce">Présentation de XFCE</a></li>
+		<li>1.3 <a href="#documents">Documents</a></li>
+	</ul></li>
+	<li>2. <a href="#fabricationcleusb">Fabrication de la clé USB</a></li>
+	<li><ul>
+		<li>2.1 <a href="#methode1">Méthode 1</a> : sous Windows avec LinuxLive USB Creator</li>
+		<li>2.2 <a href="#methode2">Méthode 2</a> : gravure d'un CD à partir d'une image ISO</li>
+		<li>2.3 <a href="#methode3">Méthode 3</a> : sous Linux, à l'aide de deux clés USB</li>
+		<li>2.4 <a href="#methode4">Méthode 4</a> : duplication à partir d'une clefISN</li>
+	</ul></li>
+	<li>3. <a href="#ajouterapplications">Ajouter des applications</a></li>
+	<li><ul>
+		<li>3.1 <a href="#paquetsdeb">Les paquets « deb »</a></li>
+		<li>3.2 <a href="#extensionssqh">Les extensions « sqh »</a></li>
+		<li>3.3 <a href="#creerextension">Créer une extension</a></li>
+		<li>3.4 <a href="#desinstallerextension">Désinstaller une extension</a></li>
+		<li>3.5 <a href="#installationgraphique">Installation en mode graphique</a></li>
+	</ul></li>
+	<li>4. <a href="#connexioninternet">Connexion internet</a></li>
+	<li><ul>
+		<li>4.1 <a href="#filaire">Connexion filaire</a></li>
+		<li>4.2 <a href="#sansfil">Connexion sans fil</a></li>
+		<li>4.3 <a href="#proxy">Proxy</a></li>
+		<li><ul>
+			<li>4.3.1 <a href="#proxyponctuelle">Configuration ponctuelle</a></li>
+			<li>4.3.2 <a href="#proxyglobale">Configuration globale</a></li>
+		</ul></li>
+	</ul></li>
+	<li>5. <a href="#faq">FAQ</a></li>
+</ul>
+</div>
+
+<h2><a name="presentationclefISN">1. Présentation de la ClefISN</a></h2>
+
+<h3><a name="liveusb">1.1. Live USB</a></h3>
+<div class="texte">
+<p>Une distribution Linux Live est un système d'exploitation Linux exécutable depuis un support amovible (clé USB, carte mémoire, CD, DVD etc.). L'utilisateur peut donc démarrer et travailler avec la distribution Linux choisie sans installer ni modifier quoi que ce soit à l'ordinateur hôte.</p>
+<p>La clefISN est une distribution Linux live Debian, il est recommandé de prévoir une clé avec une capacité d'au moins 2 Go. Pour profiter de la clefISN il faudra faire démarrer l'ordinateur hôte sur la clé USB, pour cela :</p>
+<ul>
+<li>modifiez l'ordre de démarrage des périphériques « bootables » : il faut pour cela accéder à l'utilitaire de configuration du BIOS ;</li>
+<li>surveillez le menu de démarrage de l'ordinateur puis appuyez sur une touche du type Del, F9, F2, Alt+F2 ... tout dépend du type de BIOS. Cette information est indiquée au démarrage par le message  « Press ….. to enter setup ». Pour plus d'informations vous pouvez consultez sur le site CommentÇaMarche <a href="http://www.commentcamarche.net/faq/18870-configurer-proprement-la-sequence-de-demarrage-dans-le-bios" title="accéder à l'utilitaire de configuration du BIOS">la marche à suivre</a> pour la plupart des fabricants et des BIOS ;</li>
+<li>une fois  dans cet utilitaire de configuration, il suffit de sélectionner la clé USB.</li>
+</ul>
+</div>
+
+
+<h3><a name="presentationxfce">1.2. Présentation de XFCE</a></h3>
+<div class="texte">
+<p>Au démarrage, le système Linux Debian se charge puis on accède au gestionnaire de fenêtres XFCE.</p>
+
+<span class="imagecentree">
+	<img src="images/Interface_xfce_reduite.png" alt="Aspect du bureau XFCE">
+</span>
+
+<p>Cet environnement est composé de deux barres et d'un bureau léger. Dans la barre des tâches (celle du bas) on trouve :</p>
+<ul style="line-height: 4em;margin-left: 15ex;">
+	<li style="list-style-image: url(images/icone1.png);">
+		Une icône permettant d'accéder au menu des applications.
+	</li>
+	<li style="list-style-image: url(images/icone2.png);">
+		Une console (ou terminal) permettant de saisir des commandes.
+	</li>
+	<li style="list-style-image: url(images/icone3.png);">
+		Un explorateur de fichiers Thunar.
+	</li>
+	<li style="list-style-image: url(images/icone4.png);">
+		Un navigateur internet Iceweasel.
+	</li>
+	<li style="list-style-image: url(images/icone6.png);">
+		Une icône permettant d'éteindre la machine, ce qui permet de retirer la clé USB de façon sûre.
+	</li>
+	<li style="list-style-image: url(images/icone7.png);">
+		Une horloge.
+	</li>
+	<li style="list-style-image: url(images/icone5.png);">
+		Une application permettant de fabriquer une copie de la ClefISN.
+	</li>
+</ul>
+</div>
+
+<h3><a name="documents">1.3. Documents</a></h3>
+<div class="texte">
+<p>Les documents que vous utiliserez de façon naturelle restent en mémoire vive, avec copies régulières sur la clé, et seront sauvegardés en fin de session. C'est tout à fait transparent pour l'utilisateur, mais évidemment inadéquat pour des documents de taille importante.</p>
+<p>Ainsi, si vous devez utiliser des documents de grande taille (par exemple un fichier vidéo), utilisez le dossier <span class="icode">Documents</span> du dossier
+utilisateur (le dossier <span class="icode">user</span>) : il correspond à un enregistrement effectif sur la clé physique.</p>
+</div>
+
+<h2><a name="fabricationcleusb">2. Fabrication de la clé USB</a></h2>
+<div class="texte">
+<p>La clé usb ISN est maintenue par François Boisson. Il existe plusieurs méthodes pour fabriquer la clé.</p>
+<p>La première étape consiste à télécharger la dernière version de la clé, dans un fichier ClefISN.iso, à <a href="https://gforge.inria.fr/frs/?group_id=4102" title="Récupérer le fichier ClefISN.iso">cette adresse</a>.</p>
+<span class="imagecentree">
+	<img src="images/download.png" alt="Télécharger l'image ISO">
+</span>
+</div>
+
+<h3><a name="methode1">2.1. Méthode 1 : sous Windows avec LinuxLive USB Creator</a></h3>
+<div class="texte">
+<span class="imageadroite">
+	<img src="images/LinuxLive_choix_cle.png" alt="Lili">
+</span>
+
+<ul>
+<li>Téléchargez puis installez LinuxLive USB Creator (Lili) disponible à <a href="http://www.linuxliveusb.com/fr/download/" title="Récupérer LinuxLive USB Creator">cette adresse</a></li>
+<li>Insérez la clé USB puis lancez lili.</li>
+<li>Sélectionnez la clé USB dans le cadre « Étape 1 : Choisir la clé ».</li>
+<li>Sélectionnez l'image iso ClefISN.iso, dans le cadre « Étape 2 : Choisir la source ». Ne pas tenir compte du message « cet ISO n'est pas dans la liste de compatibilité ».</li>
+<li>Cliquez sur l'éclair « Étape 5 : Installer » pour lancer l'installation.</li>
+<li>Pour en savoir on pourra consulter le guide de l'utilisateur de Lili.</li>
+<li>Une fois l'installation terminée, redémarrez l'ordinateur (laissez la clé branchée).</li>
+<li>Il ne reste plus qu'à booter sur la clé, pour cela pensez à configurer le menu de choix de boot dans le BIOS.</li>
+<li>L'écran de démarrage rouge apparaît, sélectionnez la première option en appuyant sur entrée.</li>
+<li>Le système Linux démarre et le gestionnaire de fenêtres XFCE  se charge.</li>
+</ul>
+
+
+<p><b>Remarque :</b> lors de la création de la clé avec l'utilitaire Lili, vous avez la possibilité d'utiliser le logiciel VirtualBox. Il s'agit d'un programme capable d’exécuter plusieurs systèmes d'exploitation sur une même machine, ainsi si vous ne souhaitez pas redémarrer l'ordinateur et booter sur la clé vous pouvez lancer <span class="icode">Portable_VirtualBox.exe</span> qui se trouve dans le répertoire <span class="icode">VirtualBox>Portable_VirtualBox</span> de la clé. VirtualBox exécutera alors la ClefISN dans votre session Windows.</p>
+<span class="imagecentree">
+	<img src="images/virtual_box.png" alt="Virtual Box">
+</span>
+
+</div>
+
+
+<h3><a name="methode2">2.2. Méthode 2 : gravure d'un CD à partir d'une image ISO</a></h3>
+<div class="texte">
+<p>Le fichier ClefISN.iso est une image disque ISO, il faut graver l'image et non pas le fichier. Pour cela utilisez un logiciel de gravure. Plusieurs logiciels commerciaux remplissent cette fonction, par exemptle Nero ou Alcohol 120%. Il est également possible d'utiliser des logiciels libres comme isorecorder, k3b (qui peut créer un média bootable), Brasero, graveman, dd ou mkisofs, ou bien encore l'application « Utilitaire de Disque » intégrée aux systèmes Mac OS X.
+Consultez l'aide de votre logiciel de gravure dans la rubrique « graver directement une image ISO ».</p>
+<p>Une fois l'image ISO gravée, bootez sur ce cd et créez une clé usb en vous reportant à la section : <a href="#methode4">2.4. Méthode 4 : duplication à partir d'une clefISN.</a></p>
+</div>
+
+
+<h3><a name="methode3">2.3. Méthode 3 : sous Linux et Mac, à l'aide de deux clés USB</a></h3>
+<div class="texte">
+<p>Une première étape consiste tout d'abord à obtenir un liveusb avec l'image ISO téléchargée.</p>
+<ul><li>Installez sur votre ordinateur unetbootin (Linux et Mac uniquement).</li>
+<li>Insérez la première clé usb, lancez unetbootin, sélectionnez alors le fichier ClefISN.iso et installez ISN sur votre clé usb.</li>
+<li>Une fois installé, il faut copier les deux fichiers isolinux/initrd.img  et  isolinux/linuxlive à la racine de la clé.</li></ul>
+<p>La deuxième étape consiste à booter sur la première clé usb pour créer une deuxième clé usb qui sera elle valide.</p>
+<ul><li>Bootez sur la première clé usb.</li>
+<li>Insérez la deuxième clé usb.</li>
+<li>Dupliquez la ClefISN comme indiqué ci-dessous.</li></ul>
+</div>
+
+
+
+<h3><a name="methode4">2.4. Méthode 4 : duplication à partir d'une clefISN</a></h3>
+<div class="texte">
+<p>Si vous disposez déja d'une clefISN il est possible de créer d'autres clefISN à partir de cette dernière.</p>
+<p>Bootez sur la clé ISN.</p>
+<p>Le lancement de la procédure permettant de faire une clé bootable se fait en cliquant sur <img src="images/icone5.png" alt="bouton de duplication"> à droite de l'horloge sur la barre des tâches.</p>
+<p>Une fenêtre apparaît vous demandant de confirmer votre action et, dans le cas où c'est bien ce que vous souhaitez faire, d'insérer la clé USB où vous souhaitez installer ClefISN.</p>
+<span class="imagecentree"><img src="images/install_ISN1.png" alt="étape 1"></span>
+<p>Après quelques secondes, une fenêtre peut apparaître présentant le contenu de la clé USB introduite. Le titre de la fenêtre (sdc1 pour moi) vous donne le nom de la clé (sdc ici).</p>
+<p>Dans tous les cas, après quelques secondes, et si vous êtes sûr d'avoir mis la bonne clé, cliquez sur « Continuer».</p>
+<p>Une fenêtre apparaît listant toutes les clés USB trouvées avec une estimation de leur capacité. Cliquez sur la clé sélectionnée (sdc dans notre exemple).</p>
+<span class="imagecentree"><img src="images/install_ISN2.png" alt="étape 2"></span>
+<p>Des fenêtres peuvent s'ouvrir listant tous les systèmes de fichiers contenus sur la clé. \textbf{Tous les fichiers sur la clé seront effacés. Si vous désirez continuer, cliquez sur « Continue ».</p>
+<span class="imagecentree"><img src="images/install_ISN3.png" alt="étape 3"></span>
+<p>Une fenêtre annonçant le formatage de bas niveau de la clé se présente, c'est la dernière occasion pour vous de tout arrêter, cliquez sur Oui pour continuer.</p>
+<span class="imagecentree"><img src="images/install_ISN4.png" alt="étape 4"></span>
+<p>Ensuite une fenêtre vous propose de formater la clé en VFAT.</p>
+<span class="imagecentree"><img src="images/install_ISN5.png" alt="étape 5"></span>
+<p>Là encore, cliquez sur «Continue», une fenêtre indiquant que la copie des fichiers s'effectue s'affiche. Là encore il suffit d'attendre.</p>
+<span class="imagecentree"><img src="images/install_ISN6.png" alt="étape 6"></span>
+<p>À l'issue de cette procédure, une fenêtre vous indique que la clé est prête.</p>
+<span class="imagecentree"><img src="images/install_ISN7.png" alt="étape 7"></span>
+</div>
+
+<h2><a name="ajouterapplications">3. Ajouter des applications</a></h2>
+
+<h3><a name="paquetsdeb">3.1. Les paquets « deb »</a></h3>
+<div class="texte">
+<p>Les distributions Linux utilisent un système de paquets (package en anglais). Il s'agit d'archives compressées contenant les fichiers nécessaires à l'installation de logiciels. La clefISN est basée sur une distribution Linux Debian, on peut donc installer n'importe quel programme issu de la logithèque Debian sous forme de paquet « .deb». </p>
+<p>Pour installer un paquet « deb », il suffit d'ouvrir une console avec le bouton <img src="images/icone2.png" alt="bouton console">, puis de saisir :
+</p>
+<pre class="code">
+sudo apt-get update
+sudo apt-get install nom_du_paquet.deb
+</pre>
+<p>Cette méthode installe le logiciel voulu uniquement pour la session courante, au démarrage suivant <b>il faudra répéter cette opération</b> si on veut pouvoir l'utiliser de nouveau.</p>
+<p><b>N.B. :</b> Pour une installation à long terme préférez les extensions « sqh ».</p>
+</div>
+
+<h3><a name="extensionssqh">3.2. Les extensions « sqh »</a></h3>
+<div class="texte">
+<p>Les extensions sont des paquets spécifiquement destinés à la clé ISN, elles sont réalisées, maintenues par François Boisson et téléchargeables à <a href="https://gforge.inria.fr/frs/?group_id=4102" title="télécharger les extensions">cette adresse</a>.</p>
+<p>Exemple : l'extension javascool pour la clefISN se nomme <span class="icode">extension_javascool.sqh</span>.</p> 
+<p>Elles s'installent très simplement, pour cela il suffit de placer l'extension choisie dans le dossier <span class="icode">isn/</span> à la racine de la clé (vous verrez ce dossier en montant la clé USB sous Windows, par exemple).</p>
+<p><b>Remarque :</b> n'installez pas les extensions dont le nom commence par <span class="icode">extension_dpkg_…</span> (sauf bien sûr si vous savez ce à quoi ils servent : leur utilisation dépasse le cadre de cette documentation).</p>
+</div>
+
+<h3><a name="creerextension">3.3. Créer une extension</a></h3>
+<div class="texte">
+<p>Si parmi les extensions proposées vous ne trouvez pas un logiciel particulier, il vous reste la possibilité
+de créer votre propre extension à partir d'un paquet « deb ». Il est possible d'installer n'importe quelle application sur la clé et d'en faire une extension spécifique à la clé ISN.</p>
+<p>Par exemple pour installer l'éditeur gvim qui se trouve dans le paquet vim-gtk. Saisir en ligne de commande dans une console :</p> 
+<pre class="code">
+sudo apt-get update
+sudo apt-get install vim-gtk
+sudo sauve-extension
+</pre>
+<p>Le programme <span class="icode">sauve-extension</span> demande alors le nom de l'extension que l'on souhaite <span class="icode">vim-gtk</span>. Une extension au nom de <span class="icode">extension_vim-gtk.sqh</span> est alors créée  dans le répertoire <span class="icode">isn/</span> à la racine de la clé (vous verrez ce dossier en montant la clé USB sous Windows, par exemple). </p>
+<p>Rebootez sur votre clé usb et gvim est installé et fonctionnel.</p>
+
+</div>
+
+<h3><a name="desinstallerextension">3.4. Désinstaller une extension</a></h3>
+<div class="texte">
+<p>Pour désinstaller une extension il suffit de la supprimer du répertoire <span class="icode">isn/</span>.</p>
+</div>
+
+<h3><a name="installationgraphique">3.5. Installation en mode graphique</a></h3>
+<div class="texte">
+<p>Vous pouvez installer un utilitaire, appelé <span class="icode">synaptic</span> permettant d'installer les paquets en mode graphique.</p>
+<p>Pour installer synaptic saisir dans une console :</p>
+<pre class="code">
+sudo apt-get update
+sudo apt-get install synaptic
+sudo sauve-extension
+</pre>
+<p>Pour le lancer il suffira de lancer synaptic depuis le menu des applications ou depuis une console.</p>
+
+</div>
+
+<h3><a name="conservationpreferences">3.6. La conservation des préférences et le fichier liste</a></h3>
+<div class="texte">
+<p>Il existe des fichiers et des dossiers cachés  ( .bash_history , .bashrc ... ), leur nom commence par un &lt; . &gt;. Ces fichiers sont utilisés pour conserver les préférences.<br/>
+Pour les voir avec le gestionnaire de fichier <img src="images/icone3.png" alt="gestionaire">, il faut cocher Vue&gt;Montrer les fichiers cachés.</p>
+<p>Lors de l'extinction de la session, tous les fichiers du répertoire /home/user sont sauvegardés. Seuls les fichiers cachés (commençant par un &lt;.&gt;) ne le sont pas.</p>
+<p>Si vous désirez par exemple que vos préférences vim soient conservées, ou encore les options de Xcas, il suffit de rajouter le nom du fichier ou du répertoire correspondant dans le fichier <it> liste</it>.<br/>
+Je rajoute donc .vimrc et .xcasrc dans le fichier  <it>liste</it> pour que ces deux fichiers de configurations ne soient pas effacés.
+</p>
+</div>
+
+
+
+
+<h2><a name="connexioninternet">4. Connexion internet</a></h2>
+
+<h3><a name="filaire">4.1. Connexion filaire»</a></h3>
+<div class="texte">
+<p>D'une manière générale, l'utilisation des paramètres automatiques (comme le DHCP) avec une connexion filaire (type Ethernet) permet d'être connecté sans aucune autre manipulation que celle de brancher le câble réseau.</p>
+</div>
+
+<h3><a name="sansfil">4.2. Connexion sans fil»</a></h3>
+<div class="texte">
+<p>Dans la plupart des cas, la configuration matérielle de l'ordinateur hôte est reconnue et prise en charge. Dans le cas contraire l'établissement d'une connexion wifi sera plus qu'aléatoire.</p>
+<p>Pour configurer la connexion wifi, il suffit de lancer l'utilitaire wicd via Menu XFCE >  Internet > Wicd Network Manager ou en cliquant sur l'icône réseau en haut à droite de l'écran.</p>
+<span class="imagecentree"><img src="images/wicd_config_wifi.png" alt="Utilitaire de connexion Wifi"></span>
+<p>Il ne reste plus qu'à choisir son réseau et saisir le mot de passe wifi en cliquant sur Propriétés.</p>
+</div>
+
+<h3><a name="proxy">4.3. Proxy</a></h3>
+<div class="texte">
+<p>Si vous évoluez dans un réseau muni d'un proxy, les connexions internet directes ne sont pas possibles. Il vous faut alors renseigner les paramètres de connexion au proxy (identifiant, mot de passe, adresse proxy et port).</p>
+
+</div>
+
+<h4><a name="proxyponctuelle">4.3.1. Configuration ponctuelle</a></h4>
+<div class="texte">
+<p>Pour une connexion via le navigateur Iceweasel il est possible de configurer l'utilisation d'un proxy dans le menu <span class="icode"> Édition > Préférences > Avancé > onglet  Réseau > Paramètres >  Configuration manuelle du proxy</span>.</p>
+<span class="imagecentree"><img src="images/proxy_iceweasel.png" alt="Gestion de proxy manuelle"></span>
+
+</div>
+
+<h4><a name="proxyglobale">4.3.2. Configuration globale</a></h4>
+<div class="texte">
+<p>Vous pouvez être amené à utiliser Internet pour d'autres applications qu'un navigateur internet, dans ce cas il peut être utile de configurer le proxy pour l'ensemble du système.</p>
+<p>Pour cela il faut renseigner les variables d'environnement <span class="icode"> http_proxy</span>, <span class="icode">https_proxy</span> et <span class="icode">ftp_proxy</span> en saisissant dans une console :</p>
+<pre class="code">
+export http_proxy=http://username:password@172.17.0.1:3128
+export https_proxy=http://username:password@172.17.0.1:3128
+export ftp_proxy=http://username:password@172.17.0.1:3128
+</pre>
+<p>Remplacez  172.17.0.1  par l'adresse de votre proxy et 3128 par le port du proxy, pour plus de précision consultez votre administrateur réseau.</p>
+<p>Si vous voulez que cela soit permanent alors il faut écrire ces lignes dans le fichier <span class="icode">/home/user/.bashrc</span> :</p>
+<ul><li>Ouvrez le gestionnaire de fichiers et cochez  <span class="icode">Vue > Montrer les fichiers cachés</span></li>
+<li>Éditez alors le fichier <span class="icode">.bashrc</span> pour écrire les lignes précédentes.</li>
+<li>Éditez aussi le fichier <span class="icode">liste</span> pour ajouter à la fin: <span class="icode">.bashrc</span></li>
+<li>Vous pouvez décocher <span class="icode">Vue > Montrer les fichiers cachés</span>.</li>
+</ul>
+</div>
+
+
+
+
+<h2><a name="faq">5. FAQ</a></h2>
+
+<div class="texte">
+
+</div>
+<p><b>1. Pourquoi travailler en mémoire vive et non pas directement sur la clé ? </b></p>
+<p>Travailler directement sur la clé impose de longues séries d'écritures, ce qui est mal supporté par les clés USB. Et cela pour effet d'avoir des clés défectueuses au bout de quelque temps. </p>
+<p><b>2. Puis-je utiliser la clé  « normalement » comme moyen de stockage ? </b></p>
+<p>Oui c'est possible du moment que vous n'effacez de fichiers spécifiques à la clefISN.</p>
+<p><b>3. Un copier-coller des fichiers d'une clefISN sur une autre clé USB suffit-il à créer une autre clefISN ?</b></p>
+<p>Non, pour dupliquer une clefISN se reporter à la section <a href="#methode4">2.4. Duplication</a></p>
+<p><b>4. La machine a figé d'un seul coup, que se passe-t-il ?</b></p>
+<p>L'ensemble de la mémoire de la machine a été utilisée, cela signifie que soit un programme est trop gourmand (rare), soit un répertoire personnel contient trop de fichiers. Faites le ménage directement ou sur une autre machine et tout ira mieux.</p>
+<p><b>5. Comment installer une extension <span class="icode">extension_xxxxx.sqh</span> ?</b></p>
+<p>Placez le  fichier <span class="icode">extension_xxxxx.sqh</span> dans le répertoire <span class="icode">isn/</span> de la clé.</p>
+<p><b>6. Où puis-je trouver de l'aide ?</b></p>
+<p>Posez toutes vos questions sur le <a href="http://science-info-lycee.fr/le-forum/">forum du SIL:O !</a> Elles trouveront certainement rapidement une réponse.</p>
+
+
+
+<p align="center">
+   <a href="http://validator.w3.org/check?uri=referer"><img
+     src="http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01 Transitional" height="31" width="88"></a>
+     <a href="http://jigsaw.w3.org/css-validator/check/referer">
+         <img style="border:0;width:88px;height:31px"
+             src="http://jigsaw.w3.org/css-validator/images/vcss-blue"
+             alt="CSS Valide !">
+     </a>
+     
+ </p>
+</HTML>
