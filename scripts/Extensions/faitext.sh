@@ -23,7 +23,7 @@ analyse_extension ()
 {
 eval NOM_$2=$1
 #eval echo NOM_$2 = \$NOM_$2
-if $(tail -c $MAX_LONGUEUR $1 | grep -q -E "^[0-9 ]*$") ; then
+if $(tail -c $MAX_LONGUEUR $1 | grep -q -E "^[0-9 ]+$") ; then
     eval NOMB=\$NOM_$2
 #    echo NOMB = $NOMB
     LONGUEUR=$(tail -c $MAX_LONGUEUR $NOMB)
@@ -124,7 +124,7 @@ if [ ! -z "$LSTEXTORG" ] ; then
 fi
 
 
-
+echo $EDIT
 if [ -z $EDIT ] ; then
 MONTAGE=/var/$(tempfile)
 BASE=/var/$(tempfile)
@@ -157,7 +157,10 @@ MONTESQH="mount -o loop -t squashfs "
 	    mount -t aufs aufs $MONTAGE -o dirs=$TEMP=rw$CHAINE 
 	    mount -t proc proc $MONTAGE/proc
 	    mount -o bind /dev $MONTAGE/dev
+	    ln -s $MONTAGE /var/tmp/ISN
+	    cp /etc/resolv.conf /var/tmp/ISN/etc
 	    chroot $MONTAGE
+	    rm /var/tmp/ISN
 	    umount $MONTAGE/dev
 	    umount $MONTAGE/proc
 	    umount $MONTAGE
@@ -203,7 +206,10 @@ MONTESQH="mount -o loop -t squashfs "
     mount -t aufs aufs $MONTAGE -o dirs=$NOM.dir=rw$CHAINE 
     mount -t proc proc $MONTAGE/proc
     mount -o bind /dev $MONTAGE/dev
+    ln -s $MONTAGE /var/tmp/ISN
+    cp /etc/resolv.conf /var/tmp/ISN/etc
     chroot $MONTAGE
+    rm /var/tmp/ISN
     umount $MONTAGE/dev
     umount $MONTAGE/proc
     if [ ! -z $BIGFUSION ] ; then
@@ -288,7 +294,10 @@ else
     fi
     mount -t proc proc $BASEFILE.dir/proc
     mount -o bind /dev $BASEFILE.dir/dev
+    ln -s $BASEFILE.dir /var/tmp/ISN
+    cp /etc/resolv.conf /var/tmp/ISN/etc
     chroot $BASEFILE.dir
+    rm /var/tmp/ISN
     umount $BASEFILE.dir/proc
     umount $BASEFILE.dir/dev
     if [ ! -z $FINALISE ] ; then
