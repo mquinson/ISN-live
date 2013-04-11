@@ -1,0 +1,26 @@
+#!/bin/sh
+
+PREREQ=""
+
+prereqs()
+{
+	echo "$PREREQ"
+}
+
+case $1 in
+# get pre-requisites
+prereqs)
+	prereqs
+	exit 0
+	;;
+esac
+
+# Step 1 - Basic tools
+if [ ! -x /usr/bin/bcrypt ] ; then
+	exit 0
+fi
+
+. /usr/share/initramfs-tools/hook-functions
+copy_exec /usr/bin/bcrypt /bin
+
+exit 0

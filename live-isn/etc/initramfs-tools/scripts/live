@@ -191,6 +191,7 @@ analyse_extension ()
 # echo Next=$NEXT
 		eval unset TAB_$NEXT
 		analyse_extension ${MONTAGE}/${ISN_DIR}/$f $NEXT
+		NEXT=$(expr $2 + 1)
 		eval TAB_$2=\"\$TAB_$2 \$TAB_$NEXT\"
 #		eval echo TAB_$2 donne \$TAB_$2
 	    fi
@@ -225,13 +226,13 @@ mount_base()
 	mount $1 $MONTAGE
     else
 	if [ $DEBUG = "Yes" ] ; then echo mount -t $FSTYPE $1 $MONTAGE ; fi
-	mount -t $FSTYPE $1 $MONTAGE
+	mount -t $FSTYPE $1 $MONTAGE -o rw,uid=1000,gid=1000
     fi
 # copie des fichiers de la clef en RAM
     if grep -q -E "ramroot *= *true" /proc/cmdline ; then
 	echo "Copy all in RAM."
 	[ $DEBUG = "Yes" ] && echo "Copy on $RAMCDR"
-	cp -dpRf $MONTAGE/* $RAMCDR
+	cp -dpRf $MONTAGE/${ISN_DIR} $RAMCDR
 	umount $MONTAGE
 	rmdir $MONTAGE
 	mv $RAMCDR $MONTAGE
