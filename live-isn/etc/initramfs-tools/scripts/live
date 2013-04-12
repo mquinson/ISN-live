@@ -232,7 +232,13 @@ mount_base()
     if grep -q -E "ramroot *= *true" /proc/cmdline ; then
 	echo "Copy all in RAM."
 	[ $DEBUG = "Yes" ] && echo "Copy on $RAMCDR"
-	cp -dpRf $MONTAGE/${ISN_DIR} $RAMCDR
+	if [ -f $MONTAGE/transfert ] ; then
+	    for i in $(cat $MONTAGE/transfert) ; do
+		cp -dpRf $MONTAGE/$i $RAMCDR
+	    done
+	else
+	    cp -dpRf $MONTAGE/* $RAMCDR
+	fi
 	umount $MONTAGE
 	rmdir $MONTAGE
 	mv $RAMCDR $MONTAGE
