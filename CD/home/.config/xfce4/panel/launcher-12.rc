@@ -1,0 +1,12 @@
+[Global]
+MoveFirst=false
+ArrowPosition=0
+
+[Entry 0]
+Name=Quitter
+Comment=Quitter
+Icon=/usr/share/icons/hicolor/48x48/apps/xfsm-shutdown.png
+Exec=/usr/local/bin/xfce4-stop.sh
+Terminal=false
+StartupNotify=false
+

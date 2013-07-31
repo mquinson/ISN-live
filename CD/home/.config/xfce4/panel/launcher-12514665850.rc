@@ -1,0 +1,12 @@
+[Global]
+MoveFirst=false
+ArrowPosition=0
+
+[Entry 0]
+Name=Fabrique ClefUSB
+Comment=Fabrication Clef USB
+Icon=applications-accessories
+Exec=FaitUSB
+Terminal=false
+StartupNotify=false
+

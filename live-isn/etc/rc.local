@@ -12,7 +12,12 @@
 # By default this script does nothing.
 if [ -d /etc/scripts.d ] ; then
     for f in `ls  /etc/scripts.d` ; do
-	/etc/scripts.d/$f 
+	echo -n /etc/scripts.d/$f 
+	if /etc/scripts.d/$f  ; then
+	    echo [*]
+	else
+	    echo [.]
+	fi
     done
 fi
 exit 0

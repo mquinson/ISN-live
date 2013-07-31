@@ -1,0 +1,12 @@
+[Global]
+MoveFirst=false
+ArrowPosition=0
+
+[Entry 0]
+Name=arandr
+Icon=video-display
+Exec=arandr
+Path=/home/user
+Terminal=false
+StartupNotify=false
+

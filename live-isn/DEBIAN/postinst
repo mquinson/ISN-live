@@ -5,4 +5,8 @@ if [ "$1" = "configure" ]; then
 	echo '0,15,30,45 *	* * *	root	/usr/bin/backupisn > /dev/null 2>&1 #backup ISN' >> /tmp/crontab
 	mv /etc/crontab /etc/crontab.dpkg
 	mv /tmp/crontab /etc
+	mv /etc/initramfs-tools/initramfs.conf /etc/initramfs-tools/initramfs.conf.old
+	mv /etc/initramfs-tools/initramfs.conf.live /etc/initramfs-tools/initramfs.conf
+	mv /etc/skel/.bashrc /etc/skel/.bashrc.old
+	mv /etc/skel/.bashrc.live /etc/skel/.bashrc
 fi

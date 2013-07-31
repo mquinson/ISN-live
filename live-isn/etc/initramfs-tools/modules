@@ -2,6 +2,8 @@ usb-storage
 whci-hcd 
 xhci-hcd 
 ehci-hcd 
+ehci-pci
+ehci-platform 
 ohci-hcd 
 uhci-hcd 
 atkbd 

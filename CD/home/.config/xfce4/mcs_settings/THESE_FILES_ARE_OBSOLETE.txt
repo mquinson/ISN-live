@@ -1,0 +1,8 @@
+The following files in this directory have been migrated to the new
+Xfconf configuration system and can be safely deleted if you so desire:
+
+    desktop.xml
+    workspaces.xml
+
+Other files have not been migrated and the applications previously using
+them may need to be reconfigured manually.

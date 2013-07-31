@@ -6,6 +6,10 @@ if [ "$1" = "remove" ]; then
    grep -v "#backup ISN" /etc/crontab > /tmp/crontab
    mv /etc/crontab /etc/crontab.dpkg
    mv /tmp/crontab /etc/crontab
+   mv /etc/initramfs-tools/initramfs.conf /etc/initramfs-tools/initramfs.conf.live
+   mv /etc/initramfs-tools/initramfs.conf /etc/initramfs-tools/initramfs.conf.old
+   mv /etc/skel/.bashrc /etc/skel/.bashrc.live
+   mv /etc/skel/.bashrc /etc/skel/.bashrc.old
 
 fi
 

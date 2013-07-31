@@ -88,14 +88,14 @@ fi
 kill $PID
 mount | grep /dev/$CLEF_CHOISIE | awk '{print "umount "$1}' | sh
 CMD="mkdiskimage /dev/"$CLEF_CHOISIE$ARG
-commande "mkdiskimage /dev/$CLEF_CHOISIE$ARG"  "Formattage bas niveau de la clef USB, attention c'est irréversible." "Formattage bas niveau en cours..."
+commande "mkdiskimage /dev/$CLEF_CHOISIE$ARG"  "Formatage bas niveau de la clef USB, attention c'est irréversible." "Formatage bas niveau en cours..."
 fdisk /dev/$CLEF_CHOISIE <<EOF
 t
 c
 w
 q
 EOF
-commande "mkfs.vfat /dev/"$CLEF_CHOISIE"1" "Formattage VFAT de la clef" "Formattage VFAT en cours..."
+commande "mkfs.vfat /dev/"$CLEF_CHOISIE"1" "Formatage VFAT de la clef" "Formatage VFAT en cours..."
 if [ -z $FAKE ] ; then
     cat /usr/lib/syslinux/mbr.bin > /dev/$CLEF_CHOISIE
 fi
@@ -123,15 +123,20 @@ cd /oldroot/cdrom
 cp -a * /media/$PARTITION
 chmod -R +w /media/$PARTITION
 cd /media/$PARTITION
-if [ -f isolinux/linuxlive ] ; then
-    mv isolinux/linuxlive .
-    mv isolinux/initrd.img .
-fi
+#if [ -f isolinux/linuxlive ] ; then
+#    mv isolinux/linuxlive .
+#    mv isolinux/initrd.img .
+#fi
+cp /usr/lib/syslinux/vesamenu.c32 .
+cp $(find . -name linuxlive | head -n 1) .
+cp $(find . -name initrd.img | head -n 1) .
+cp syslinux.bak syslinux.cfg
 cd 
 kill $PIDX > /dev/null 2>&1
 umount /media/$PARTITION
 syslinux /dev/$PARTITION
+dosfslabel /dev/$PARTITION CLEFISN
 cat > /tmp/USB_message <<EOF
-La clef est prête.
+La clef est prête. Attention à laisser l'écriture sur la clef s'achever (laissez quelques dizaines de secondes)
 EOF
 xmessage -center -file /tmp/USB_message -buttons "Cliquer ici"

@@ -1,0 +1,13 @@
+[Entry 0]
+Name=Clavier
+Comment=choix clavier
+Icon=gnome-dev-keyboard
+Exec=xfkc
+Path=/home/user
+Terminal=false
+StartupNotify=false
+
+[Global]
+MoveFirst=false
+ArrowPosition=0
+

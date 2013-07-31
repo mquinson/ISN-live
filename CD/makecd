@@ -10,11 +10,18 @@
 # Attention, il peut être gros (il reproduit toute votre clef), veillez
 # à avoir assez de RAM.
 #
-if [ ! -f isolinux/linux-live ] ; then 
-cp linux-live isolinux
-fi
-if [ ! -f isolinux/initrd.img ] ; then 
-cp initrd.img isolinux
-fi
-genisoimage -v -J -l -ldots -A "Clef ISN" -P "ISN" -p "F.Boisson" -V "ISN" -c boot.cat -b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -boot-info-table -o /tmp/BootCD.iso .
+#if [ ! -f isolinux/linux-live ] ; then 
+#cp linuxlive isolinux
+#fi
+#if [ ! -f isolinux/initrd.img ] ; then 
+#cp initrd.img isolinux
+#fi
+#genisoimage -v -J -l -ldots -A "Clef ISN" -P "ISN" -p "F.Boisson" -V "ISN" -c boot.cat -b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -boot-info-table -o /tmp/BootCD.iso .
+genisoimage -v -J -l -ldots -A "Clef ISN" -P "ISN" -p "F.Boisson" -V "ISN" -c boot.cat -b isolinux.bin -no-emul-boot -boot-load-size 4 -boot-info-table -o /tmp/BootCD.iso .
 ls -l /tmp/BootCD*
+isohybrid /tmp/BootCD.iso
+#xorriso -as mkisofs \
+# -b /isolinux/isolinux.bin -c /isolinux/boot.cat -no-emul-boot -boot-load-size 4 \
+# -boot-info-table -o /tmp/BootCD.iso .
+
+# -boot-info-table -isohybrid-mbr /usr/lib/syslinux/isohdpfx.bin -o /tmp/BootCD.iso .

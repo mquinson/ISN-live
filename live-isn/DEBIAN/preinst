@@ -20,9 +20,9 @@ case "$1" in
 	dpkg-divert --package live-isn --divert /usr/bin/xfce4-session-logout.real --rename /usr/bin/xfce4-session-logout
 	dpkg-divert --package live-isn --divert /usr/bin/mkdiskimage.old --rename /usr/bin/mkdiskimage
 #	dpkg-divert --package live-isn --divert /usr/bin/startx.old --rename /usr/bin/startx
-	dpkg-divert --package live-isn --divert /etc/initramfs-tools/initramfs.conf.old --rename /etc/initramfs-tools/initramfs.conf
+#	dpkg-divert --package live-isn --divert /etc/initramfs-tools/initramfs.conf.old --rename /etc/initramfs-tools/initramfs.conf
 #	dpkg-divert --package live-isn --divert @@@@.old --rename @@@@
-	dpkg-divert --package live-isn --divert /etc/skel/.bashrc.old --rename /etc/skel/.bashrc
+#	dpkg-divert --package live-isn --divert /etc/skel/.bashrc.old --rename /etc/skel/.bashrc
     ;;
 
     abort-upgrade)

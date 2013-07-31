@@ -6,9 +6,9 @@ case "$1" in
     dpkg-divert --package live-isn --rename --remove /usr/bin/xfce4-session-logout
     dpkg-divert --package live-isn --rename --remove /usr/bin/mkdiskimage
 #    dpkg-divert --package live-isn --rename --remove /usr/bin/startx
-    dpkg-divert --package live-isn --rename --remove /etc/initramfs-tools/initramfs.conf
+#    dpkg-divert --package live-isn --rename --remove /etc/initramfs-tools/initramfs.conf
 #    dpkg-divert --package live-isn --rename --remove @@@@
-    dpkg-divert --package live-isn --rename --remove /etc/skel/.bashrc
+#    dpkg-divert --package live-isn --rename --remove /etc/skel/.bashrc
     ;;
     
     upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)

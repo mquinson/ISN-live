@@ -1,0 +1,7 @@
+[Global]
+ShowFrame=false
+Rows=1
+
+[Applications]
+wicd-client.py=false
+
