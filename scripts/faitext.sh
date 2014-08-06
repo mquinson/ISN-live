@@ -1,4 +1,8 @@
 #!/bin/sh
+if [ -z "$SUDO_COMMAND" ] ; then
+    sudo faitext.sh $*
+else
+#export
 usage()
 {
 cat << EOF
@@ -11,7 +15,7 @@ Utilisation: faiext.sh arguments
  -f : finalise l'extension en fabriquant le fichier .sqh à la fin
  -F : Fusionne les extensions avec la base
  -D : detruit le répertoire après finalisation de la base
--m : Edition de l'extension en RAM
+ -m : Edition de l'extension en RAM
  -h : usage de la commande
 EOF
 }
@@ -272,11 +276,17 @@ MONTESQH="mount -o loop -t squashfs "
 	mv $BASEFILE $BASEFILE.old
 	mv $NOMDPKGBASE $NOMDPKGBASE.old
 	mksquashfs $MONTAGE $BASEFILE -wildcards -noappend -e var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian*
+	if [ ! -z "$SUDO_USER" ] ; then
+	    chown $SUDO_USER $BASEFILE
+	fi
 	ARCHIVE=$(tempfile)
 	rm $ARCHIVE
 	mkdir -p $ARCHIVE
 	(cd $MONTAGE ; tar c var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian* ) | (cd $ARCHIVE ; tar x)
 	mksquashfs $ARCHIVE extension_dpkg-$(cat $MONTAGE/FB).sqh  -noappend
+	if [ ! -z "$SUDO_USER" ] ; then
+	    chown $SUDO_USER extension_dpkg-$(cat $MONTAGE/FB).sqh
+	fi
 	rm -Rf $ARCHIVE
     fi
     umount $MONTAGE
@@ -306,6 +316,9 @@ MONTESQH="mount -o loop -t squashfs "
 	    if [ ! -z "$LSTEXTP" ] ; then
 		doextension.sh extension_$NOM.sqh $LSTEXTP
 	    fi
+	    if [ ! -z "$SUDO_USER" ] ; then
+		chown $SUDO_USER extension_$NOM.sqh
+	    fi
 	    ARCHIVE=$(tempfile)
 	    rm $ARCHIVE
 	    mkdir -p $ARCHIVE
@@ -318,6 +331,9 @@ MONTESQH="mount -o loop -t squashfs "
 		fi
 	    done
 	    doextension.sh extension_dpkg_$NOM.sqh $LSTEXTP
+	    if [ ! -z "$SUDO_USER" ] ; then
+		chown $SUDO_USER extension_dpkg_$NOM.sqh
+	    fi
 	    rm -Rf $ARCHIVE
 	else
 	    mksquashfs $NOM.dir extension_$NOM.sqh -noappend
@@ -330,6 +346,10 @@ MONTESQH="mount -o loop -t squashfs "
 	    if [ ! -z "$LSTEXTP" ] ; then
 		doextension.sh extension_$NOM.sqh $LSTEXTP
 	    fi
+	    if [ ! -z "$SUDO_USER" ] ; then
+		chown $SUDO_USER extension_$NOM.sqh
+	    fi
+
 	fi
 	if [ ! -z $RAMFS ] ; then 
 	    umount $NOM.dir
@@ -364,12 +384,20 @@ else
 	mv $NOMDPKGBASE $NOMDPKGBASE.old
 	[ ! -z "$(ls $BASEFILE.dir/var/cache/apt/archives/*.deb)" ] && rm  $BASEFILE.dir/var/cache/apt/archives/*.deb
 	mksquashfs $BASEFILE.dir $BASEFILE -wildcards -noappend -e var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian*
+	if [ ! -z "$SUDO_USER" ] ; then
+	    chown $SUDO_USER $BASEFILE
+	fi
+
 	ARCHIVE=$(tempfile)
 	rm $ARCHIVE
 	mkdir -p $ARCHIVE
 	(cd $BASEFILE.dir ; tar c var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian* ) | (cd $ARCHIVE ; tar x)
 	mksquashfs $ARCHIVE extension_dpkg-$(cat $BASEFILE.dir/FB).sqh  -noappend
+	if [ ! -z "$SUDO_USER" ] ; then
+	    chown $SUDO_USER extension_dpkg-$(cat $BASEFILE.dir/FB).sqh
+	fi
 	rm -Rf $ARCHIVE
 	[ ! -z $DESTROY ] && rm -Rf $BASEFILE.dir
     fi
+fi
 fi

@@ -1,4 +1,8 @@
 #!/bin/sh
+if [ -z "$SUDO_COMMAND" ] ; then
+    sudo faitext.sh $*
+else
+#export
 usage()
 {
 cat << EOF
@@ -11,6 +15,7 @@ Utilisation: faiext.sh arguments
  -f : finalise l'extension en fabriquant le fichier .sqh à la fin
  -F : Fusionne les extensions avec la base
  -D : detruit le répertoire après finalisation de la base
+ -m : Edition de l'extension en RAM
  -h : usage de la commande
 EOF
 }
@@ -18,7 +23,20 @@ EOF
 # 12 chiffres + un ^J
 # analyse une suite d'extensions et sort l'ordre de chargement
 #
+INDICELOOP=$(mount | grep -c loop)
 MAX_LONGUEUR=13
+
+makeloop ()
+{
+    if [ ! -b /dev/loop$INDICELOOP ] ; then
+	mknod /dev/loop$INDICELOOP b 7 $INDICELOOP
+    else
+	/bin/true
+#	echo /dev/loop$INDICELOOP existant
+    fi
+    INDICELOOP=$(expr $INDICELOOP + 1)
+}
+
 analyse_extension ()
 {
 eval NOM_$2=$1
@@ -75,7 +93,7 @@ unset EDIT
 unset DODPKG
 LSTEXTORG=""
 FINALISE=""
-while getopts “hdb:fFB:n:e:” OPTION
+while getopts “mhdb:fFB:n:e:” OPTION
 do
      case $OPTION in
          h)
@@ -106,6 +124,10 @@ do
 	     ;;
 	 D)
 	     DESTROY=1
+	     ;;
+	 m)
+	     RAMFS=1
+	     FINALISE=1
 	     ;;
          ?)
              usage
@@ -143,17 +165,25 @@ MONTESQH="mount -o loop -t squashfs "
 	    TEMP=$(tempfile)
 	    rm $TEMP
 	    mkdir -p $TEMP
+	    makeloop
 	    $MONTESQH $BASEFILE $BASE
+	    makeloop
 	    $MONTESQH extension_dpkg-$(cat $BASE/FB).sqh $DPKG
 	    CHAINE=":$DPKG=ro:$BASE=ro"
 	    mkdir -p $SUPPORT
 	    for ext in $LSTEXT ; do
-		EXT=$(basename $ext | sed -e 's/.sqh//')
-		mkdir -p $SUPPORT/$EXT
-		$MONTESQH $ext $SUPPORT/$EXT
-		CHAINE=":$SUPPORT/$EXT=ro$CHAINE"
+		if [ -f $ext ] ; then
+		    EXT=$(basename $ext | sed -e 's/.sqh//')
+		    mkdir -p $SUPPORT/$EXT
+		    makeloop
+		    $MONTESQH $ext $SUPPORT/$EXT
+		    CHAINE=":$SUPPORT/$EXT=ro$CHAINE"
+		else
+		    echo $ext absent, on continue quand même...
+		fi
 	    done    
 #	    echo "mount -t aufs aufs $MONTAGE -o dirs=$TEMP=rw$CHAINE "
+	    makeloop
 	    mount -t aufs aufs $MONTAGE -o dirs=$TEMP=rw$CHAINE 
 	    mount -t proc proc $MONTAGE/proc
 	    mount -o bind /dev $MONTAGE/dev
@@ -181,28 +211,56 @@ MONTESQH="mount -o loop -t squashfs "
     mkdir -p $BASE
     mkdir -p $MONTAGE
     NOM=$(echo $NOM | sed -e 's/.dir//' | sed -e 's|/$||')
-    if [ ! -d $NOM.dir ] ; then
-	if [ -f extension_$NOM.sqh ] ; then
-	    unsquashfs extension_$NOM.sqh
-	    mv squashfs-root $NOM.dir
-	    if [ -f extension_dpkg_$NOM.sqh ] ; then
-		unsquashfs extension_dpkg_$NOM.sqh
-		(cd squashfs-root ; tar c .) | (cd $NOM.dir ; tar x)
-		rm -R squashfs-root
+    if [ ! -d $NOM.dir ] || [ ! -z $RAMFS ] ; then
+	if [ ! -z $RAMFS ] ;then
+	    mkdir -p $NOM.dir
+	    mount -t tmpfs tmpfs $NOM.dir
+	    if [ -f extension_$NOM.sqh ] ; then
+		cd $NOM.dir
+		unsquashfs ../extension_$NOM.sqh
+		cd squashfs-root
+		mv * ..
+		mv .??* ..
+		cd ..
+		rm -Rf squashfs-root
+		if [ -f ../extension_dpkg_$NOM.sqh ] ; then
+		    unsquashfs extension_dpkg_$NOM.sqh
+		    (cd squashfs-root ; tar c .) | (cd .. ; tar x)
+		    rm -R squashfs-root
+		fi
+		cd ..
 	    fi
+	else
+	    if [ -f extension_$NOM.sqh ] ; then
+		unsquashfs extension_$NOM.sqh
+		mv squashfs-root $NOM.dir
+		if [ -f extension_dpkg_$NOM.sqh ] ; then
+		    unsquashfs extension_dpkg_$NOM.sqh
+		    (cd squashfs-root ; tar c .) | (cd $NOM.dir ; tar x)
+		    rm -R squashfs-root
+		fi
+	    fi
+	    mkdir -p $NOM.dir
 	fi
-	mkdir -p $NOM.dir
     fi
+    makeloop
     $MONTESQH $BASEFILE $BASE
+    makeloop
     $MONTESQH extension_dpkg-$(cat $BASE/FB).sqh $DPKG
     CHAINE=":$DPKG=ro:$BASE=ro"
     for ext in $LSTEXT ; do
-	EXT=$(basename $ext | sed -e 's/.sqh//')
-	mkdir -p $SUPPORT/$EXT
-	$MONTESQH $ext $SUPPORT/$EXT
-	CHAINE=":$SUPPORT/$EXT=ro$CHAINE"
+	if [ -f $ext ] ; then
+	    EXT=$(basename $ext | sed -e 's/.sqh//')
+	    mkdir -p $SUPPORT/$EXT
+	    makeloop
+	    $MONTESQH $ext $SUPPORT/$EXT
+	    CHAINE=":$SUPPORT/$EXT=ro$CHAINE"
+	else
+	    echo $ext absent, on continue quand même...
+	fi
     done    
 #    echo "mount -t aufs aufs $MONTAGE -o dirs=$NOM.dir=rw$CHAINE "
+    makeloop
     mount -t aufs aufs $MONTAGE -o dirs=$NOM.dir=rw$CHAINE 
     mount -t proc proc $MONTAGE/proc
     mount -o bind /dev $MONTAGE/dev
@@ -218,11 +276,17 @@ MONTESQH="mount -o loop -t squashfs "
 	mv $BASEFILE $BASEFILE.old
 	mv $NOMDPKGBASE $NOMDPKGBASE.old
 	mksquashfs $MONTAGE $BASEFILE -wildcards -noappend -e var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian*
+	if [ ! -z "$SUDO_USER" ] ; then
+	    chown $SUDO_USER $BASEFILE
+	fi
 	ARCHIVE=$(tempfile)
 	rm $ARCHIVE
 	mkdir -p $ARCHIVE
 	(cd $MONTAGE ; tar c var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian* ) | (cd $ARCHIVE ; tar x)
 	mksquashfs $ARCHIVE extension_dpkg-$(cat $MONTAGE/FB).sqh  -noappend
+	if [ ! -z "$SUDO_USER" ] ; then
+	    chown $SUDO_USER extension_dpkg-$(cat $MONTAGE/FB).sqh
+	fi
 	rm -Rf $ARCHIVE
     fi
     umount $MONTAGE
@@ -252,6 +316,9 @@ MONTESQH="mount -o loop -t squashfs "
 	    if [ ! -z "$LSTEXTP" ] ; then
 		doextension.sh extension_$NOM.sqh $LSTEXTP
 	    fi
+	    if [ ! -z "$SUDO_USER" ] ; then
+		chown $SUDO_USER extension_$NOM.sqh
+	    fi
 	    ARCHIVE=$(tempfile)
 	    rm $ARCHIVE
 	    mkdir -p $ARCHIVE
@@ -264,6 +331,9 @@ MONTESQH="mount -o loop -t squashfs "
 		fi
 	    done
 	    doextension.sh extension_dpkg_$NOM.sqh $LSTEXTP
+	    if [ ! -z "$SUDO_USER" ] ; then
+		chown $SUDO_USER extension_dpkg_$NOM.sqh
+	    fi
 	    rm -Rf $ARCHIVE
 	else
 	    mksquashfs $NOM.dir extension_$NOM.sqh -noappend
@@ -276,6 +346,14 @@ MONTESQH="mount -o loop -t squashfs "
 	    if [ ! -z "$LSTEXTP" ] ; then
 		doextension.sh extension_$NOM.sqh $LSTEXTP
 	    fi
+	    if [ ! -z "$SUDO_USER" ] ; then
+		chown $SUDO_USER extension_$NOM.sqh
+	    fi
+
+	fi
+	if [ ! -z $RAMFS ] ; then 
+	    umount $NOM.dir
+	    rmdir --ignore-fail-on-non-empty $NOM.dir
 	fi
     fi   
 else
@@ -294,7 +372,7 @@ else
     fi
     mount -t proc proc $BASEFILE.dir/proc
     mount -o bind /dev $BASEFILE.dir/dev
-    ln -s $BASEFILE.dir /var/tmp/ISN
+    ln -s $(pwd)/$BASEFILE.dir /var/tmp/ISN
     cp /etc/resolv.conf /var/tmp/ISN/etc
     chroot $BASEFILE.dir
     rm /var/tmp/ISN
@@ -306,12 +384,20 @@ else
 	mv $NOMDPKGBASE $NOMDPKGBASE.old
 	[ ! -z "$(ls $BASEFILE.dir/var/cache/apt/archives/*.deb)" ] && rm  $BASEFILE.dir/var/cache/apt/archives/*.deb
 	mksquashfs $BASEFILE.dir $BASEFILE -wildcards -noappend -e var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian*
+	if [ ! -z "$SUDO_USER" ] ; then
+	    chown $SUDO_USER $BASEFILE
+	fi
+
 	ARCHIVE=$(tempfile)
 	rm $ARCHIVE
 	mkdir -p $ARCHIVE
 	(cd $BASEFILE.dir ; tar c var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian* ) | (cd $ARCHIVE ; tar x)
 	mksquashfs $ARCHIVE extension_dpkg-$(cat $BASEFILE.dir/FB).sqh  -noappend
+	if [ ! -z "$SUDO_USER" ] ; then
+	    chown $SUDO_USER extension_dpkg-$(cat $BASEFILE.dir/FB).sqh
+	fi
 	rm -Rf $ARCHIVE
 	[ ! -z $DESTROY ] && rm -Rf $BASEFILE.dir
     fi
+fi
 fi
