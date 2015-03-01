@@ -59,7 +59,7 @@ if [ $CLEF_CHOISIE = "Stop" ] ; then
 fi
 killall Thunar
 PID=""
-for part in `ls /media | grep $CLEF_CHOISIE` ; do
+for part in `udisks --enumerate | xargs -n 1 basename | grep $CLEF_CHOISIE` ; do
     mkdir -p /media/$part
     mount /dev/$part /media/$part
     Thunar /media/$part &
@@ -72,7 +72,7 @@ Cliquez sur Stop ou Continue suivant votre décision.
 EOF
 CHOIX=`xmessage -center -print -file /tmp/USB_message -buttons "Stop,Continue" `
 if [ $CHOIX = "Stop" ] ; then
-    for part in `ls /media | grep $CLEF_CHOISIE` ; do
+    for part in `udisks --enumerate | xargs -n 1 basename | grep $CLEF_CHOISIE` ; do
 	umount /media/$part
     done
     kill $PID
@@ -114,29 +114,29 @@ fi
 mkdir -p /media/$PARTITION
 mount -t vfat /dev/$PARTITION /media/$PARTITION
 cat > /tmp/USB_message <<EOF
-Recopie des fichiers sur la clef,prévoir quelques minutes, 
-il y a tout de même plus de 500M à copier.
+Recopie des fichiers sur la clef,prévoir quelques minutes. 
 EOF
 xmessage -center -file /tmp/USB_message -buttons "Attendez..." &
 PIDX=$!
 cd /oldroot/cdrom
 cp -a * /media/$PARTITION
+cp -dpRf .disk /media/${PARTITION}
+mkdir -p  /media/${PARTITION}/.disk
+touch /media/${PARTITION}/.disk/info
 chmod -R +w /media/$PARTITION
 cd /media/$PARTITION
-#if [ -f isolinux/linuxlive ] ; then
-#    mv isolinux/linuxlive .
-#    mv isolinux/initrd.img .
-#fi
 cp /usr/lib/syslinux/vesamenu.c32 .
+cp /usr/lib/syslinux/vesainfo.c32 .
 cp $(find . -name linuxlive | head -n 1) .
 cp $(find . -name initrd.img | head -n 1) .
 cp syslinux.bak syslinux.cfg
 cd 
+dosfslabel /dev/$PARTITION CLEFAGREG
 kill $PIDX > /dev/null 2>&1
 umount /media/$PARTITION
 syslinux /dev/$PARTITION
-dosfslabel /dev/$PARTITION CLEFISN
+sync
 cat > /tmp/USB_message <<EOF
-La clef est prête. Attention à laisser l'écriture sur la clef s'achever (laissez quelques dizaines de secondes)
+La clef est prête. Attendeez un peu le termps de laisser l'écriture sur la clef s'achever (cligontement)
 EOF
 xmessage -center -file /tmp/USB_message -buttons "Cliquer ici"

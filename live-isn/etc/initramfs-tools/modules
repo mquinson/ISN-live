@@ -2,7 +2,9 @@ usb-storage
 whci-hcd 
 xhci-hcd 
 ehci-hcd 
+ehci-pci 
 ohci-hcd 
+ohci-pci
 uhci-hcd 
 atkbd 
 sg 
