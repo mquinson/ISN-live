@@ -1,0 +1,5 @@
+[Default Applications]
+image/png=geeqie-standard.desktop
+
+[Added Associations]
+image/png=geeqie-standard.desktop;

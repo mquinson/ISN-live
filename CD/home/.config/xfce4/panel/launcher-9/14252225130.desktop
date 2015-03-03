@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Fabrication Clef
+Comment=Clonage d'une clef
+Icon=package_utilities
+Exec=/usr/local/bin/FaitUSB
+Path=/home/user
+Terminal=false
+StartupNotify=false
+

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Quitter
+Comment=Quitter
+Icon=/usr/share/icons/hicolor/48x48/apps/xfsm-shutdown.png
+Exec=/usr/local/bin/xfce4-stop.sh
+Path=
+Terminal=false
+StartupNotify=false
+

@@ -20,7 +20,7 @@
         <property name="color-style" type="empty"/>
         <property name="image-path" type="string" value="/usr/share/pixmaps/isn/tuxmenu.png"/>
         <property name="image-show" type="empty"/>
-        <property name="last-image" type="empty"/>
+        <property name="last-image" type="string" value="/usr/share/pixmaps/isn/tuxmenu.png"/>
         <property name="last-single-image" type="string" value="/usr/share/pixmaps/isn/tuxmenu.png"/>
         <property name="image-style" type="int" value="3"/>
       </property>
@@ -29,6 +29,9 @@
   <property name="desktop-icons" type="empty">
     <property name="style" type="int" value="2"/>
     <property name="use-custom-font-size" type="bool" value="false"/>
+    <property name="file-icons" type="empty">
+      <property name="show-removable" type="bool" value="false"/>
+    </property>
   </property>
   <property name="desktop-menu" type="empty">
     <property name="show" type="bool" value="true"/>

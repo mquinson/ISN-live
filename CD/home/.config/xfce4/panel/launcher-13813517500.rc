@@ -1,0 +1,13 @@
+[Entry 0]
+Name=Arret
+Comment=Arret
+Icon=xfce-system-exit
+Exec=/usr/bin/xfce4-session-logout
+Path=/home/user
+Terminal=false
+StartupNotify=false
+
+[Global]
+MoveFirst=false
+ArrowPosition=0
+
