@@ -91,9 +91,10 @@ complete ()
 
 unset EDIT
 unset DODPKG
+unset OPTIMISE
 LSTEXTORG=""
 FINALISE=""
-while getopts “mhdb:fFB:n:e:” OPTION
+while getopts “mhodb:fFB:n:e:” OPTION
 do
      case $OPTION in
          h)
@@ -105,6 +106,9 @@ do
              ;;
 	 d)
 	     DODPKG=1
+	     ;;
+	 o)
+	     OPTIMISE=1
 	     ;;
          n)
              NOM=$OPTARG
@@ -273,6 +277,7 @@ MONTESQH="mount -o loop -t squashfs "
     if [ ! -z $BIGFUSION ] ; then
 	echo Fusion sur $BASE
 	[ ! -z "$(ls $MONTAGE/var/cache/apt/archives/*.deb)" ] && rm  $NOM.dir/var/cache/apt/archives/*.deb
+	NOMDPKGBASE=extension_dpkg-$(cat $BASEFILE.dir/FB).sqh
 	mv $BASEFILE $BASEFILE.old
 	mv $NOMDPKGBASE $NOMDPKGBASE.old
 	mksquashfs $MONTAGE $BASEFILE -wildcards -noappend -e var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian*
@@ -305,6 +310,7 @@ MONTESQH="mount -o loop -t squashfs "
     if [ ! -z $FINALISE ] ; then
 	echo Finalisation de $NOM
 	[ ! -z "$(ls $NOM.dir/var/cache/apt/archives/*.deb)" ] && rm  $NOM.dir/var/cache/apt/archives/*.deb
+	[ ! -z "$OPTIMISE" ] && rm $NOM.dir/var/cache/apt/*.bin $NOM.dir/var/lib/apt/lists/*
 	if [ ! -z $DODPKG ] ; then
 	    mksquashfs $NOM.dir extension_$NOM.sqh -wildcards -noappend -e var/lib/apt* var/lib/dpkg* var/lib/aptitude* var/cache/apt* var/cache/debconf* usr/share/lintian*
 	    LSTEXTP=
